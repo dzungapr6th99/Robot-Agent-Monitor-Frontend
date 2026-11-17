@@ -7,6 +7,7 @@ import os
 import json
 from pathlib import Path
 import socket
+import signal
 import sqlite3
 import subprocess
 import sys
@@ -37,6 +38,37 @@ def wait(port, process):
   except OSError: time.sleep(0.5)
  raise TimeoutError(f"Server {port} did not start")
 
+def kill_tree(process):
+ # Windows taskkill may be unavailable in a managed session. Use the stdlib
+ # Win32 process snapshot to stop only descendants of the process we started.
+ if os.name == "nt":
+  import ctypes
+  from ctypes import wintypes
+  class Entry(ctypes.Structure):
+   _fields_=[("size",wintypes.DWORD),("usage",wintypes.DWORD),("pid",wintypes.DWORD),("heap",ctypes.c_size_t),("module",wintypes.DWORD),("threads",wintypes.DWORD),("parent",wintypes.DWORD),("priority",wintypes.LONG),("flags",wintypes.DWORD),("name",wintypes.WCHAR*260)]
+  kernel=ctypes.WinDLL("kernel32",use_last_error=True)
+  kernel.CreateToolhelp32Snapshot.argtypes=[wintypes.DWORD,wintypes.DWORD]
+  kernel.CreateToolhelp32Snapshot.restype=wintypes.HANDLE
+  kernel.Process32FirstW.argtypes=[wintypes.HANDLE,ctypes.POINTER(Entry)]
+  kernel.Process32NextW.argtypes=[wintypes.HANDLE,ctypes.POINTER(Entry)]
+  kernel.CloseHandle.argtypes=[wintypes.HANDLE]
+  snapshot=kernel.CreateToolhelp32Snapshot(2,0)
+  if snapshot == ctypes.c_void_p(-1).value: raise ctypes.WinError(ctypes.get_last_error())
+  children={}
+  try:
+   entry=Entry();entry.size=ctypes.sizeof(entry)
+   valid=kernel.Process32FirstW(snapshot,ctypes.byref(entry))
+   while valid:
+    children.setdefault(entry.parent,[]).append(entry.pid)
+    valid=kernel.Process32NextW(snapshot,ctypes.byref(entry))
+  finally: kernel.CloseHandle(snapshot)
+  owned=[process.pid]
+  for parent in owned: owned.extend(child for child in children.get(parent,[]) if child not in owned)
+  for child in reversed(owned[1:]):
+   try: os.kill(child,signal.SIGTERM)
+   except ProcessLookupError: pass
+ if process.poll() is None: process.kill()
+
 def main():
  sys.stdout.reconfigure(encoding="utf-8")
  sys.stderr.reconfigure(encoding="utf-8")
@@ -65,7 +97,6 @@ def main():
     return result.returncode
   finally:
    for process in reversed(processes):
-    subprocess.run(["taskkill","/PID",str(process.pid),"/T","/F"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,creationflags=flags)
-    if process.poll() is None: process.kill()
+    kill_tree(process)
    for process in processes: process.wait(timeout=10)
 if __name__=="__main__":raise SystemExit(main())
