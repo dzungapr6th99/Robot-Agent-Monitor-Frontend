@@ -13,7 +13,7 @@ import time
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-RUST = ROOT.parents[1] / "Robot-Agent-Monitor-Rust"
+RUST = ROOT.parents[1] / "robot-agent-monitor-rust"
 TABLES = {
  "robot_profiles": "name TEXT NOT NULL UNIQUE, description TEXT",
  "robot_configurations": "robot_profile_id INTEGER NOT NULL REFERENCES robot_profiles(id) ON DELETE RESTRICT, name TEXT NOT NULL, urdf_path TEXT NOT NULL, UNIQUE(robot_profile_id,name)",
@@ -44,7 +44,7 @@ def main():
     # Put timestamp columns before table-level constraints.
     parts=fields.split(", UNIQUE("); columns=parts[0]; constraint=", UNIQUE("+parts[1] if len(parts)>1 else ""
     con.execute(f"CREATE TABLE {table} (id INTEGER PRIMARY KEY, {columns}, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP{constraint})")
-  env=dict(os.environ,ROBOT_AGENT_DATABASE=str(db),URDF_DATA_ROOT=str(temp/"assets"),ROS_ENABLED="false",REALTIME_AUTHORITY="",AGENT_LISTEN="127.0.0.1:18080",BACKEND_URL="http://127.0.0.1:18080",NEXT_TELEMETRY_DISABLED="1")
+  env=dict(os.environ,ROBOT_AGENT_DATABASE=str(db),URDF_DATA_ROOT=str(temp/"assets"),ROS_ENABLED="false",AGENT_LISTEN="127.0.0.1:18080",BACKEND_URL="http://127.0.0.1:18080",NEXT_TELEMETRY_DISABLED="1")
   for key in ["ROBOT_CONFIGURATION_ID"]: env.pop(key,None)
   processes=[]
   logs=ROOT/".e2e-logs";logs.mkdir(exist_ok=True)

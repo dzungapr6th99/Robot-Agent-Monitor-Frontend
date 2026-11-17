@@ -33,9 +33,9 @@ Backend hiện chưa cung cấp action goal, cancel/stop hoặc pose playback. N
 
 ## Realtime
 
-Fetch SSE /api/ros/messages truyền bearer header, retry 3 giây, stale sau 3 giây. Health poll 5 giây; metadata refresh 15 giây. Khi đổi cấu hình ROS trong database, restart agent với ROBOT_CONFIGURATION_ID tương ứng.
+WebSocket `/api/ros/ws` carries status and ROS messages without per-request authentication. Reconnect after 3 seconds; samples become stale after 3 seconds. Health poll: 5 seconds; metadata refresh: 15 seconds.
 
-Backend yêu cầu token ros.view cho status/messages và ros.publish cho publish. Nhập token trong Settings; chỉ lưu sessionStorage của tab. Không có login/account và không đưa ROS domain/namespace/QoS vào UI.
+Write operations and WebSocket connections check Origin against the backend configuration.
 
 Monitor hiện hỗ trợ DiagnosticArray/DiagnosticStatus, JointState, Odometry, TFMessage. Sensor type khác mới lưu cấu hình, chưa có runtime decoder. ROS thật cần backend feature ros2 và môi trường ROS theo README Rust.
 
@@ -64,6 +64,6 @@ npx playwright install chromium
 
 Runner chỉ cần Python standard library. Dùng SQLite tạm, backend 127.0.0.1:18080 và frontend 3100 (hai port phải trống); tự dừng process do nó tạo. Không mở DB triển khai. Schema runner là fixture theo entities, không phải migration production.
 
-5 bài Playwright: CRUD/URDF thật; pagination/file isolation/episode reference; SSE live/stale/offline; publish payload/clamp; ZIP/package mesh. ROS responses trong bài realtime/publish được mock tường minh; chưa chứng minh ROS transport thật. Screenshot/trace ở test-results; server logs ở .e2e-logs.
+5 bài Playwright: CRUD/URDF thật; pagination/file isolation/episode reference; WebSocket live/stale/offline; publish payload/clamp; ZIP/package mesh. ROS responses trong bài realtime/publish được mock tường minh; chưa chứng minh ROS transport thật. Screenshot/trace ở test-results; server logs ở .e2e-logs.
 
 Audit production không còn vulnerability tại thời điểm kiểm tra. Audit tổng còn 8 moderate thuộc minimatch/toolchain ESLint; không áp dụng đề xuất hạ major ESLint của audit.
