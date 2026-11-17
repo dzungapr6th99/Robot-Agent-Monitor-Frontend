@@ -4,21 +4,25 @@ import { RobotViewer } from "../../components/robot-viewer";
 import { useMonitor } from "../../components/monitor-provider";
 import { Badge, ErrorBox } from "../../components/ui";
 import { request } from "../../lib/api";
-
-type Profile = { id: string; model: "smolvla" | "groot"; version: string };
-type Message = { role: "Operator" | "Robot"; text: string };
+import type {
+  VlaProfile,
+  VlaMessage,
+  VlaCommandResult,
+  VlaStopResult,
+} from "../../lib/types";
 const modelNames = { smolvla: "SmolVLA", groot: "GR00T" };
 
 export default function RobotChat() {
   const monitor = useMonitor();
-  const [profiles, setProfiles] = useState<Profile[] | null>(null);
-  const [model, setModel] = useState<Profile["model"] | "">("");
+  const [profiles, setProfiles] = useState<VlaProfile[] | null>(null);
+  const [model, setModel] = useState<VlaProfile["model"] | "">("");
   const [version, setVersion] = useState("");
   const [draft, setDraft] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<VlaMessage[]>([]);
   const [running, setRunning] = useState(false);
   const [stopping, setStopping] = useState(false);
   const [error, setError] = useState("");
+  const rosOnline = monitor.connected && monitor.ros?.running === true;
   const models = [...new Set(profiles?.map((profile) => profile.model))];
   const activeModel = model || models[0];
   const versions =
@@ -28,7 +32,7 @@ export default function RobotChat() {
 
   useEffect(() => {
     const controller = new AbortController();
-    request<Profile[]>("/api/vla/models", { signal: controller.signal })
+    request<VlaProfile[]>("/api/vla/models", { signal: controller.signal })
       .then(setProfiles)
       .catch((error: Error) => {
         if (!controller.signal.aborted) setError(error.message);
@@ -39,23 +43,20 @@ export default function RobotChat() {
   async function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const task = draft.trim();
-    if (!task || !activeProfile || running) return;
+    if (!task || !activeProfile || running || !rosOnline) return;
     setDraft("");
     setRunning(true);
     setError("");
     setMessages((previous) => [...previous, { role: "Operator", text: task }]);
     try {
-      const result = await request<{ publishedSteps: number }>(
-        "/api/vla/commands",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ profileId: activeProfile.id, task }),
-          signal: AbortSignal.timeout(
-            Number(process.env.NEXT_PUBLIC_VLA_COMMAND_TIMEOUT_MS),
-          ),
-        },
-      );
+      const result = await request<VlaCommandResult>("/api/vla/commands", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: activeProfile.id, task }),
+        signal: AbortSignal.timeout(
+          Number(process.env.NEXT_PUBLIC_VLA_COMMAND_TIMEOUT_MS),
+        ),
+      });
       setMessages((previous) => [
         ...previous,
         {
@@ -77,7 +78,7 @@ export default function RobotChat() {
   async function stop() {
     setStopping(true);
     try {
-      const result = await request<{ stopping: boolean }>("/api/vla/stop", {
+      const result = await request<VlaStopResult>("/api/vla/stop", {
         method: "POST",
       });
       if (!result.stopping) setStopping(false);
@@ -106,7 +107,7 @@ export default function RobotChat() {
                   value={activeModel ?? ""}
                   disabled={running || !models.length}
                   onChange={(event) => {
-                    setModel(event.target.value as Profile["model"]);
+                    setModel(event.target.value as VlaProfile["model"]);
                     setVersion("");
                   }}
                 >
@@ -162,6 +163,11 @@ export default function RobotChat() {
               )}
             </div>
             <ErrorBox message={error} />
+            {!rosOnline && (
+              <p className="muted">
+                ROS is offline. Connect ROS to send an instruction.
+              </p>
+            )}
             <label>
               Instruction
               <textarea
@@ -176,7 +182,9 @@ export default function RobotChat() {
             <div className="button-row">
               <button
                 className="primary"
-                disabled={!activeProfile || !draft.trim() || running}
+                disabled={
+                  !activeProfile || !draft.trim() || running || !rosOnline
+                }
               >
                 Send instruction
               </button>

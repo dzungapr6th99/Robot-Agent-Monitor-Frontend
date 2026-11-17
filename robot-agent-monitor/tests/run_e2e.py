@@ -4,10 +4,12 @@ The fixture is test-only and never opens an existing database.
 """
 from contextlib import closing
 import os
+import json
 from pathlib import Path
 import socket
 import sqlite3
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.request
@@ -36,15 +38,20 @@ def wait(port, process):
  raise TimeoutError(f"Server {port} did not start")
 
 def main():
+ sys.stdout.reconfigure(encoding="utf-8")
+ sys.stderr.reconfigure(encoding="utf-8")
  flags = getattr(subprocess,"CREATE_NO_WINDOW",0)
- with tempfile.TemporaryDirectory(prefix="robot-frontend-e2e-") as directory:
+ logs=ROOT/".e2e-logs";logs.mkdir(exist_ok=True)
+ with tempfile.TemporaryDirectory(prefix="robot-frontend-e2e-", dir=logs) as directory:
   temp=Path(directory); db=temp/"fixture.db"
   with closing(sqlite3.connect(db)) as con, con:
    for table, fields in TABLES.items():
     # Put timestamp columns before table-level constraints.
     parts=fields.split(", UNIQUE("); columns=parts[0]; constraint=", UNIQUE("+parts[1] if len(parts)>1 else ""
     con.execute(f"CREATE TABLE {table} (id INTEGER PRIMARY KEY, {columns}, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP{constraint})")
-  env=dict(os.environ,ROBOT_AGENT_DATABASE=str(db),URDF_DATA_ROOT=str(temp/"assets"),ROS_ENABLED="false",AGENT_LISTEN="127.0.0.1:18080",BACKEND_URL="http://127.0.0.1:18080",NEXT_TELEMETRY_DISABLED="1")
+  models=temp/"profiles.json"
+  models.write_text(json.dumps([{"id":"test-arm","model":"smolvla","version":"v1"}]),encoding="utf-8")
+  env=dict(os.environ,ROBOT_AGENT_DATABASE=str(db),URDF_DATA_ROOT=str(temp/"assets"),ROS_ENABLED="false",AGENT_LISTEN="127.0.0.1:18080",BACKEND_URL="http://127.0.0.1:18080",NEXT_TELEMETRY_DISABLED="1",VLA_MODELS_FILE=str(models),ROS_TOPICS_FILE=str(RUST/"deploy/yellowarm-sim/ros-topics.json"),VLA_URL="http://127.0.0.1:8091/",VLA_COMMAND_TOPIC="/yellowarm_sim/joint_command",VLA_STATE_TOPIC="/yellowarm_sim/joint_states",REALTIME_ALLOWED_ORIGINS="http://127.0.0.1:3100")
   for key in ["ROBOT_CONFIGURATION_ID"]: env.pop(key,None)
   processes=[]
   logs=ROOT/".e2e-logs";logs.mkdir(exist_ok=True)
@@ -59,5 +66,6 @@ def main():
   finally:
    for process in reversed(processes):
     subprocess.run(["taskkill","/PID",str(process.pid),"/T","/F"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,creationflags=flags)
+    if process.poll() is None: process.kill()
    for process in processes: process.wait(timeout=10)
 if __name__=="__main__":raise SystemExit(main())
