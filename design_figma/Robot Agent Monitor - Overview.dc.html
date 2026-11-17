@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+body{margin:0;background:#0b0d0f}
+a{color:#6cb1ff}
+a:hover{color:#8fc0ff}
+*{box-sizing:border-box}
+</style>
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="./robot-viewport.js"></script>
+</helmet>
+
+<div style="width:100%;min-height:100vh;background:#0b0d0f;color:#e6e9ec;font-family:'IBM Plex Sans',sans-serif;display:flex">
+
+  <div style="width:224px;flex-shrink:0;background:#101317;border-right:1px solid #1c2024;display:flex;flex-direction:column;padding:18px 12px">
+    <div style="display:flex;align-items:center;gap:9px;padding:0 6px;margin-bottom:26px">
+      <div style="width:26px;height:26px;border-radius:6px;background:#142230;border:1px solid #24405c;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6cb1ff" stroke-width="2"><path d="M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z"/><path d="M12 2 L12 22 M3 7 L12 12 L21 7"/></svg>
+      </div>
+      <div style="font-size:13.5px;font-weight:600;color:#dde3e8;letter-spacing:.01em;line-height:1.25">Robot Agent Monitor</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;background:rgba(68,147,248,.14);color:#8fc0ff;font-size:12.5px;font-weight:500;cursor:pointer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Overview
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;color:#8b949e;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 L21 8 L21 16 L12 21 L3 16 L3 8 Z"/><path d="M12 3 L12 21 M3 8 L12 12 L21 8"/></svg>
+        Robots
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;color:#8b949e;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="8" r="2"/><circle cx="18" cy="16" r="2"/><line x1="7.6" y1="9.2" x2="16.4" y2="14.8"/></svg>
+        Joints
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;color:#8b949e;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="12" rx="2"/><circle cx="12" cy="13" r="3.2"/><path d="M9 7 L9 4.5 L13 4.5 L13 7"/></svg>
+        Sensors
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;color:#8b949e;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><line x1="12" y1="4" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="20"/><line x1="4" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="20" y2="12"/></svg>
+        Teleoperation
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;color:#8b949e;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5 L4 19 A8 3 0 0 0 20 19 L20 5"/><path d="M4 12 A8 3 0 0 0 20 12"/></svg>
+        Data
+      </div>
+    </div>
+
+    <div style="flex:1"></div>
+
+    <div style="border-top:1px solid #1c2024;padding-top:12px;display:flex;flex-direction:column;gap:7px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 6px">
+        <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:#8b949e"><span style="width:6px;height:6px;border-radius:50%;background:{{ s.backend.visual.dot }}"></span>Backend</div>
+        <div style="font-size:11.5px;color:{{ s.backend.visual.pillColor }}">{{ s.backend.label }}</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 6px">
+        <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:#8b949e"><span style="width:6px;height:6px;border-radius:50%;background:{{ s.ros.visual.dot }}"></span>ROS Runtime</div>
+        <div style="font-size:11.5px;color:{{ s.ros.visual.pillColor }}">{{ s.ros.label }}</div>
+      </div>
+      <div style="font-size:10px;color:#4a5158;padding:4px 6px 0">v0.1.0 · local</div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;position:relative">
+
+    <div style="height:58px;flex-shrink:0;border-bottom:1px solid #1c2024;background:#0e1113;display:flex;align-items:center;padding:0 20px;justify-content:space-between;gap:16px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;align-items:center;gap:6px;background:#16191c;border:1px solid #262b30;border-radius:6px;padding:6px 10px;font-size:12.5px;color:#d7dde2;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8b949e" stroke-width="1.8"><path d="M12 3 L21 8 L21 16 L12 21 L3 16 L3 8 Z"/></svg>
+          {{ s.robot.profile }}
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6b757f" stroke-width="2.4"><path d="M6 9 L12 15 L18 9"/></svg>
+        </div>
+        <span style="color:#3a4046;font-size:13px">/</span>
+        <div style="display:flex;align-items:center;gap:6px;background:#16191c;border:1px solid #262b30;border-radius:6px;padding:6px 10px;font-size:12.5px;color:#d7dde2;cursor:pointer">
+          {{ s.robot.configuration }}
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6b757f" stroke-width="2.4"><path d="M6 9 L12 15 L18 9"/></svg>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;overflow-x:auto;flex-shrink:0">
+        <sc-if value="{{ s.recording.active }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:6px;background:rgba(248,81,73,.14);border:1px solid rgba(248,81,73,.3);border-radius:20px;padding:5px 11px;font-size:11.5px;font-weight:500;color:#f85149;font-family:'IBM Plex Mono',monospace">
+            <span style="width:7px;height:7px;border-radius:50%;background:#f85149;animation:none"></span>
+            REC · {{ s.recording.elapsed }}
+          </div>
+        </sc-if>
+
+        <button onclick="{{ togglePending }}" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid #262b30;border-radius:6px;padding:6px 10px;font-size:12px;color:#98a2ad;cursor:pointer;font-family:inherit" style-hover="background:#16191c;color:#cfd6dc">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg>
+          Pending notes
+        </button>
+
+        <button style="position:relative;background:transparent;border:1px solid #262b30;border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#98a2ad;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 16 V10 A6 6 0 0 1 18 10 V16"/><path d="M4 16 H20 L18 19 H6 Z"/></svg>
+          <sc-if value="{{ s.hasWarnings }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:#f85149;border:2px solid #0e1113"></span>
+          </sc-if>
+        </button>
+
+        <div style="display:flex;align-items:center;gap:6px;border-left:1px dashed #2a3038;padding-left:14px">
+          <span style="font-size:10px;color:#5a626a;text-transform:uppercase;letter-spacing:.06em;margin-right:2px">Preview</span>
+          <sc-for list="{{ scenarios }}" as="sc" hint-placeholder-count="5">
+            <button onclick="{{ sc.select }}" style="{{ sc.style }}">{{ sc.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ firstRun }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+        <div style="max-width:380px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px">
+          <div style="width:56px;height:56px;border-radius:12px;background:#141a1f;border:1px solid #24292e;display:flex;align-items:center;justify-content:center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6b757f" stroke-width="1.6"><path d="M12 3 L21 8 L21 16 L12 21 L3 16 L3 8 Z"/><path d="M12 3 L12 21 M3 8 L12 12 L21 8"/></svg>
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:600;color:#dde3e8;margin-bottom:6px">No robot configured yet</div>
+            <div style="font-size:13px;color:#8b949e;line-height:1.6">Create a robot profile and upload a URDF configuration to see live status, joint state and sensor data here.</div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:6px">
+            <button style="background:#4493f8;color:#0b0d0f;border:none;border-radius:6px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit" style-hover="background:#5da0f9">Import Robot</button>
+            <button style="background:transparent;color:#c3cad1;border:1px solid #2b3138;border-radius:6px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit" style-hover="background:#16191c">Create Empty Profile</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ notFirstRun }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;overflow:auto;padding:22px 26px 32px;display:flex;flex-direction:column;gap:16px">
+
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <div>
+          <h1 style="margin:0;font-size:19px;font-weight:600;color:#eef1f3">Overview</h1>
+          <p style="margin:4px 0 0;font-size:12.5px;color:#8b949e">System and robot readiness at a glance</p>
+        </div>
+        <div style="font-size:11.5px;color:#5a626a;font-family:'IBM Plex Mono',monospace">Last refreshed {{ s.refreshedAt }}</div>
+      </div>
+
+      <sc-if value="{{ s.hasWarnings }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <sc-for list="{{ s.warnings }}" as="w" hint-placeholder-count="1">
+            <div style="display:flex;gap:10px;align-items:flex-start;background:{{ w.visual.pillBg }};border:1px solid {{ w.visual.borderColor }};border-radius:7px;padding:10px 13px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ w.visual.pillColor }}" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M12 9 V13.5"/><circle cx="12" cy="16.5" r="0.6" fill="{{ w.visual.pillColor }}"/><path d="M10.6 3.6 L21 21 H3 Z"/></svg>
+              <div style="font-size:12.5px;color:#d7dde2;line-height:1.5">{{ w.text }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+        <div style="background:#12151a;border:1px solid #1e2328;border-radius:8px;padding:14px 16px">
+          <div style="font-size:11px;color:#6b757f;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Backend</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:{{ s.backend.visual.pillColor }};margin-bottom:4px"><span style="width:7px;height:7px;border-radius:50%;background:{{ s.backend.visual.dot }}"></span>{{ s.backend.label }}</div>
+          <div style="font-size:11.5px;color:#6b757f">{{ s.backend.detail }}</div>
+        </div>
+        <div style="background:#12151a;border:1px solid #1e2328;border-radius:8px;padding:14px 16px">
+          <div style="font-size:11px;color:#6b757f;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">ROS Runtime</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:{{ s.ros.visual.pillColor }};margin-bottom:4px"><span style="width:7px;height:7px;border-radius:50%;background:{{ s.ros.visual.dot }}"></span>{{ s.ros.label }}</div>
+          <div style="font-size:11.5px;color:#6b757f">{{ s.ros.detail }}</div>
+        </div>
+        <div style="background:#12151a;border:1px solid #1e2328;border-radius:8px;padding:14px 16px">
+          <div style="font-size:11px;color:#6b757f;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Joint State</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:{{ s.jointState.visual.pillColor }};margin-bottom:4px"><span style="width:7px;height:7px;border-radius:50%;background:{{ s.jointState.visual.dot }}"></span>{{ s.jointState.label }}</div>
+          <div style="font-size:11.5px;color:#6b757f">{{ s.jointState.detail }}</div>
+        </div>
+        <div style="background:#12151a;border:1px solid #1e2328;border-radius:8px;padding:14px 16px">
+          <div style="font-size:11px;color:#6b757f;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Recording</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:{{ s.recording.visual.pillColor }};margin-bottom:4px"><span style="width:7px;height:7px;border-radius:50%;background:{{ s.recording.visual.dot }}"></span>{{ s.recording.label }}</div>
+          <div style="font-size:11.5px;color:#6b757f">{{ s.recording.detail }}</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start">
+
+        <div style="background:#12151a;border:1px solid #1e2328;border-radius:8px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:210px;background:#0c0e10;border-bottom:1px solid #1e2328">
+            <robot-viewport mode="{{ s.robot.viewportMode }}" style="width:100%;height:100%;display:block;position:relative;overflow:hidden"></robot-viewport>
+          </div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:13px;font-weight:600;color:#dde3e8">{{ s.robot.profile }} · {{ s.robot.configuration }}</div>
+              <button style="background:transparent;border:1px solid #262b30;border-radius:5px;padding:4px 9px;font-size:11px;color:#98a2ad;cursor:pointer;font-family:inherit" style-hover="background:#16191c;color:#cfd6dc">Reload model</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:6px;height:6px;border-radius:50%;background:{{ s.robotUrdfVisual.dot }}"></span>
+              <span style="font-size:12px;color:{{ s.robotUrdfVisual.pillColor }}">{{ s.robot.urdfDetail }}</span>
+            </div>
+            <div style="font-size:11.5px;color:#6b757f;font-family:'IBM Plex Mono',monospace">{{ s.robot.linkCount }} links · {{ s.robot.jointCount }} joints</div>
+          </div>
+        </div>
+
+        <div style="background:#12151a;border:1px solid #1e2328;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:12.5px;font-weight:600;color:#dde3e8">Joint Interfaces</div>
+            <a href="#" style="font-size:11px;color:#6cb1ff;text-decoration:none">Configure</a>
+          </div>
+          <sc-for list="{{ s.interfaces }}" as="itf" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;gap:3px;padding:9px 0;border-top:1px solid #1c2024">
+              <div style="display:flex;align-items:center;justify-content:between;gap:6px">
+                <span style="font-size:12px;color:#d7dde2;font-weight:500">{{ itf.name }}</span>
+                <span style="width:6px;height:6px;border-radius:50%;background:{{ itf.visual.dot }};margin-left:auto"></span>
+                <span style="font-size:10.5px;color:{{ itf.visual.pillColor }}">{{ itf.statusText }}</span>
+              </div>
+              <div style="font-size:10.5px;color:#6b757f;font-family:'IBM Plex Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ itf.operation }} · {{ itf.endpoint }}</div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ s.interfacesEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:11.5px;color:#5a626a;padding:8px 0">No interface data available.</div>
+          </sc-if>
+        </div>
+
+        <div style="background:#12151a;border:1px solid #1e2328;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:12.5px;font-weight:600;color:#dde3e8">Sensors</div>
+            <a href="#" style="font-size:11px;color:#6cb1ff;text-decoration:none">Configure</a>
+          </div>
+          <sc-for list="{{ s.sensors }}" as="sn" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 0;border-top:1px solid #1c2024">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:12px;color:#d7dde2;font-weight:500">{{ sn.name }}</span>
+                <span style="font-size:10.5px;color:#6b757f;font-family:'IBM Plex Mono',monospace">{{ sn.type }} · {{ sn.streamCount }} streams</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="width:6px;height:6px;border-radius:50%;background:{{ sn.visual.dot }}"></span>
+                <span style="font-size:10.5px;color:{{ sn.visual.pillColor }}">{{ sn.statusText }}</span>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ s.sensorsEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:11.5px;color:#5a626a;padding:8px 0">No sensor data available.</div>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="background:#12151a;border:1px solid #1e2328;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:12.5px;font-weight:600;color:#dde3e8">Recent Episodes</div>
+          <a href="#" style="font-size:11px;color:#6cb1ff;text-decoration:none">View all</a>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,0.9fr) minmax(0,1.1fr);padding:6px 4px;font-size:10.5px;color:#5a626a;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #1c2024">
+          <span>Name</span><span>Task</span><span>Status</span><span>Result</span><span>Duration</span><span>Started</span>
+        </div>
+        <sc-for list="{{ s.episodes }}" as="ep" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,0.9fr) minmax(0,1.1fr);padding:9px 4px;align-items:center;border-bottom:1px solid #16191c">
+            <span style="font-size:12.5px;color:#d7dde2">{{ ep.name }}</span>
+            <span style="font-size:12px;color:#8b949e">{{ ep.task }}</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:{{ ep.statusVisual.pillColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ ep.statusVisual.dot }}"></span>{{ ep.statusLabel }}</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:{{ ep.resultVisual.pillColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ ep.resultVisual.dot }}"></span>{{ ep.resultLabel }}</span>
+            <span style="font-size:11.5px;color:#8b949e;font-family:'IBM Plex Mono',monospace">{{ ep.duration }}</span>
+            <span style="font-size:11.5px;color:#6b757f">{{ ep.startedAt }}</span>
+          </div>
+        </sc-for>
+        <sc-if value="{{ s.episodesEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:11.5px;color:#5a626a;padding:10px 4px">No episodes recorded yet.</div>
+        </sc-if>
+      </div>
+
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ pendingOpen }}" hint-placeholder-val="{{ false }}">
+      <div onclick="{{ togglePending }}" style="position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:9"></div>
+      <div style="position:absolute;top:0;right:0;bottom:0;width:340px;background:#12151a;border-left:1px solid #22272c;z-index:10;padding:18px;display:flex;flex-direction:column;gap:12px;overflow:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:13px;font-weight:600;color:#dde3e8">Pending backend notes</div>
+          <button onclick="{{ togglePending }}" style="background:transparent;border:none;color:#8b949e;cursor:pointer;font-size:16px;line-height:1;padding:2px">×</button>
+        </div>
+        <div style="font-size:11.5px;color:#8b949e;line-height:1.6">Contracts this screen assumes but the backend does not fully expose yet.</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:#181c21;border:1px solid #262b30;border-radius:7px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:600;color:#e3b341;margin-bottom:4px">Runtime/API pending</div>
+            <div style="font-size:12px;color:#c3cad1;line-height:1.5">Live joint/sensor updates need a WebSocket or SignalR channel — HTTP polling only today.</div>
+          </div>
+          <div style="background:#181c21;border:1px solid #262b30;border-radius:7px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:600;color:#e3b341;margin-bottom:4px">Runtime/API pending</div>
+            <div style="font-size:12px;color:#c3cad1;line-height:1.5">3D viewer pose sync with live joint state has no data API yet.</div>
+          </div>
+          <div style="background:#181c21;border:1px solid #262b30;border-radius:7px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:600;color:#e3b341;margin-bottom:4px">Runtime/API pending</div>
+            <div style="font-size:12px;color:#c3cad1;line-height:1.5">Backend/ROS runtime health shown here is not yet backed by a health-check endpoint.</div>
+          </div>
+          <div style="background:#181c21;border:1px solid #262b30;border-radius:7px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:600;color:#e3b341;margin-bottom:4px">List/query API pending</div>
+            <div style="font-size:12px;color:#c3cad1;line-height:1.5">Recent Episodes needs list-all/filter; current query API only fetches by known IDs.</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CAT = {
+  connected:'green', available:'green', completed:'green', success:'green', enabled:'green',
+  warning:'amber', stale:'amber', partial:'amber', unreviewed:'amber', degraded:'amber',
+  unavailable:'red', type_mismatch:'red', failed:'red',
+  selected:'blue', active:'blue', recording:'blue',
+  disabled:'gray', offline:'gray', cancelled:'gray', unknown:'gray', idle:'gray', no_state_received:'gray'
+};
+const PALETTE = {
+  green:{dot:'#3fb950', pillColor:'#56d364', pillBg:'rgba(63,185,80,.12)', borderColor:'rgba(63,185,80,.28)'},
+  amber:{dot:'#d29922', pillColor:'#e3b341', pillBg:'rgba(210,153,34,.12)', borderColor:'rgba(210,153,34,.28)'},
+  red:{dot:'#f85149', pillColor:'#f85149', pillBg:'rgba(248,81,73,.12)', borderColor:'rgba(248,81,73,.28)'},
+  blue:{dot:'#4493f8', pillColor:'#6cb1ff', pillBg:'rgba(68,147,248,.12)', borderColor:'rgba(68,147,248,.28)'},
+  gray:{dot:'#6b757f', pillColor:'#8b949e', pillBg:'rgba(139,148,158,.10)', borderColor:'rgba(139,148,158,.22)'}
+};
+function vis(statusKey) { return PALETTE[CAT[statusKey] || 'gray']; }
+function label(statusKey) {
+  const L = { connected:'Connected', available:'Available', completed:'Completed', unavailable:'Unavailable',
+    type_mismatch:'Type mismatch', stale:'Stale', partial:'Partial', offline:'Offline', degraded:'Degraded',
+    idle:'Idle', unknown:'Unknown', no_state_received:'No data', failed:'Failed', cancelled:'Cancelled', unreviewed:'Unreviewed', success:'Success' };
+  return L[statusKey] || statusKey;
+}
+
+const BASE_INTERFACES = [
+  { name:'Joint States', operation:'subscribe', endpoint:'/joint_states', dataType:'sensor_msgs/msg/JointState', isDefault:false },
+  { name:'Trajectory Controller', operation:'action_client', endpoint:'/joint_trajectory_controller/follow_joint_trajectory', dataType:'control_msgs/action/FollowJointTrajectory', isDefault:true }
+];
+const BASE_SENSORS = [
+  { name:'Head Camera', type:'camera_rgbd', streamCount:3 },
+  { name:'Torso IMU', type:'imu', streamCount:1 }
+];
+const BASE_EPISODES = [
+  { name:'Walk Forward 01', task:'locomotion', statusKey:'completed', resultKey:'success', duration:'00:42', startedAt:'Today 14:12' },
+  { name:'Pick Box 03', task:'manipulation', statusKey:'completed', resultKey:'unreviewed', duration:'01:15', startedAt:'Today 11:47' },
+  { name:'Camera Calibration', task:'calibration', statusKey:'failed', resultKey:'unreviewed', duration:'00:08', startedAt:'Yesterday 18:03' }
+];
+
+function withInterfaceStatus(list, statusKey) {
+  return list.map(i => ({ ...i, statusKey }));
+}
+function withSensorStatus(list, statusKey) {
+  return list.map(s => ({ ...s, statusKey }));
+}
+
+const SCENARIOS = {
+  ready: {
+    backend: { statusKey:'connected', detail:'API reachable · 12ms' },
+    ros: { statusKey:'connected', detail:'2 nodes online' },
+    jointState: { statusKey:'available', label:'Live', detail:'Updated 2s ago · 20 joints' },
+    recording: { statusKey:'idle', label:'Idle', detail:'Last: Walk Forward 01', active:false, elapsed:'' },
+    hasWarnings:false, warnings:[],
+    robot: { profile:'Unitree G1', configuration:'Stock', urdfStatusKey:'available', urdfDetail:'Parsed · 24 links · 20 joints', linkCount:24, jointCount:20, viewportMode:'live' },
+    interfaces: withInterfaceStatus(BASE_INTERFACES, 'available'),
+    sensors: withSensorStatus(BASE_SENSORS, 'available'),
+    episodes: BASE_EPISODES
+  },
+  backend_down: {
+    backend: { statusKey:'unavailable', detail:'No response · retrying' },
+    ros: { statusKey:'unknown', label:'Unknown', detail:'Depends on backend' },
+    jointState: { statusKey:'no_state_received', label:'No data', detail:'Backend unavailable' },
+    recording: { statusKey:'idle', label:'Unavailable', detail:'Requires backend connection', active:false, elapsed:'' },
+    hasWarnings:true, warnings:[{ level:'red', text:'Backend API is unreachable. Robot and runtime state cannot be loaded — showing last cached values.' }],
+    robot: { profile:'Unitree G1', configuration:'Stock', urdfStatusKey:'unknown', urdfDetail:'Last known: 24 links · 20 joints', linkCount:24, jointCount:20, viewportMode:'offline' },
+    interfaces: withInterfaceStatus(BASE_INTERFACES, 'unknown'),
+    sensors: withSensorStatus(BASE_SENSORS, 'unknown'),
+    episodes: BASE_EPISODES
+  },
+  runtime_offline: {
+    backend: { statusKey:'connected', detail:'API reachable · 14ms' },
+    ros: { statusKey:'offline', label:'Offline', detail:'0 nodes online' },
+    jointState: { statusKey:'no_state_received', label:'No data', detail:'ROS runtime offline' },
+    recording: { statusKey:'idle', label:'Unavailable', detail:'Requires ROS runtime', active:false, elapsed:'' },
+    hasWarnings:true, warnings:[{ level:'amber', text:'ROS 2 runtime is offline. Live joint state, sensors and teleoperation commands are unavailable.' }],
+    robot: { profile:'Unitree G1', configuration:'Stock', urdfStatusKey:'available', urdfDetail:'Parsed · 24 links · 20 joints', linkCount:24, jointCount:20, viewportMode:'offline' },
+    interfaces: withInterfaceStatus(BASE_INTERFACES, 'unavailable'),
+    sensors: withSensorStatus(BASE_SENSORS, 'unavailable'),
+    episodes: BASE_EPISODES
+  },
+  stale: {
+    backend: { statusKey:'connected', detail:'API reachable · 11ms' },
+    ros: { statusKey:'degraded', label:'Degraded', detail:'1 node unresponsive' },
+    jointState: { statusKey:'stale', label:'Stale', detail:'Last update 48s ago · 20 joints' },
+    recording: { statusKey:'idle', label:'Idle', detail:'Last: Walk Forward 01', active:false, elapsed:'' },
+    hasWarnings:true, warnings:[
+      { level:'amber', text:'Joint state has not updated in 48s. Check ROS node health.' },
+      { level:'red', text:'Trajectory Controller reports a data type mismatch. Verify the ROS action type.' }
+    ],
+    robot: { profile:'Unitree G1', configuration:'Stock', urdfStatusKey:'available', urdfDetail:'Parsed · 24 links · 20 joints', linkCount:24, jointCount:20, viewportMode:'stale' },
+    interfaces: [ { ...BASE_INTERFACES[0], statusKey:'available' }, { ...BASE_INTERFACES[1], statusKey:'type_mismatch' } ],
+    sensors: [ { ...BASE_SENSORS[0], statusKey:'stale' }, { ...BASE_SENSORS[1], statusKey:'available' } ],
+    episodes: BASE_EPISODES
+  }
+};
+
+const SCENARIO_LABELS = [
+  { id:'ready', label:'Ready' },
+  { id:'first_run', label:'First run' },
+  { id:'backend_down', label:'Backend down' },
+  { id:'runtime_offline', label:'ROS offline' },
+  { id:'stale', label:'Stale' }
+];
+
+class Component extends DCLogic {
+  state = { scenario:'ready', pendingOpen:false };
+
+  buildS() {
+    const raw = SCENARIOS[this.state.scenario] || SCENARIOS.ready;
+    const backendVis = vis(raw.backend.statusKey);
+    const rosVis = vis(raw.ros.statusKey);
+    const jsVis = vis(raw.jointState.statusKey);
+    const recVis = raw.recording.active ? PALETTE.blue : vis(raw.recording.statusKey);
+    const urdfVis = vis(raw.robot.urdfStatusKey);
+
+    const interfaces = raw.interfaces.map((i, idx) => ({
+      ...i, id:idx, visual:vis(i.statusKey), statusText:label(i.statusKey)
+    }));
+    const sensors = raw.sensors.map((s, idx) => ({
+      ...s, id:idx, visual:vis(s.statusKey), statusText:label(s.statusKey)
+    }));
+    const episodes = raw.episodes.map((e, idx) => ({
+      ...e, id:idx, statusLabel:label(e.statusKey), statusVisual:vis(e.statusKey),
+      resultLabel:label(e.resultKey), resultVisual:vis(e.resultKey)
+    }));
+    const warnings = raw.warnings.map((w, idx) => ({ ...w, id:idx, visual:PALETTE[w.level] }));
+
+    return {
+      refreshedAt:'just now',
+      backend:{ label:raw.backend.label || label(raw.backend.statusKey), detail:raw.backend.detail, visual:backendVis },
+      ros:{ label:raw.ros.label || label(raw.ros.statusKey), detail:raw.ros.detail, visual:rosVis },
+      jointState:{ label:raw.jointState.label, detail:raw.jointState.detail, visual:jsVis },
+      recording:{ label:raw.recording.label, detail:raw.recording.detail, visual:recVis, active:raw.recording.active, elapsed:raw.recording.elapsed },
+      hasWarnings:raw.hasWarnings, warnings,
+      robot:raw.robot,
+      robotUrdfVisual:urdfVis,
+      interfaces, interfacesEmpty: interfaces.length === 0,
+      sensors, sensorsEmpty: sensors.length === 0,
+      episodes, episodesEmpty: episodes.length === 0
+    };
+  }
+
+  renderVals() {
+    const cur = this.state.scenario;
+    const scenarios = SCENARIO_LABELS.map(item => {
+      const active = item.id === cur;
+      return {
+        ...item,
+        select: () => this.setState({ scenario:item.id }),
+        style:`font-size:11px;padding:5px 9px;border-radius:5px;border:1px solid ${active ? 'rgba(68,147,248,.4)' : '#262b30'};background:${active ? 'rgba(68,147,248,.16)' : 'transparent'};color:${active ? '#8fc0ff' : '#8b949e'};cursor:pointer;font-family:inherit`
+      };
+    });
+    return {
+      scenarios,
+      firstRun: cur === 'first_run',
+      notFirstRun: cur !== 'first_run',
+      pendingOpen: this.state.pendingOpen,
+      togglePending: () => this.setState(s => ({ pendingOpen: !s.pendingOpen })),
+      s: this.buildS()
+    };
+  }
+}
+
+</script>
+</body>
+</html>

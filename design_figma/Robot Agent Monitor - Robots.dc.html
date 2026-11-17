@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+body{margin:0;background:#0b0d0f}
+a{color:#6cb1ff}
+a:hover{color:#8fc0ff}
+*{box-sizing:border-box}
+</style>
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="./robot-viewport.js"></script>
+</helmet>
+
+<div style="width:100%;min-height:100vh;background:#0b0d0f;color:#e6e9ec;font-family:'IBM Plex Sans',sans-serif;display:flex">
+
+  <div style="width:224px;flex-shrink:0;background:#101317;border-right:1px solid #1c2024;display:flex;flex-direction:column;padding:18px 12px">
+    <div style="display:flex;align-items:center;gap:9px;padding:0 6px;margin-bottom:26px">
+      <div style="width:26px;height:26px;border-radius:6px;background:#142230;border:1px solid #24405c;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6cb1ff" stroke-width="2"><path d="M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z"/><path d="M12 2 L12 22 M3 7 L12 12 L21 7"/></svg>
+      </div>
+      <div style="font-size:13.5px;font-weight:600;color:#dde3e8;letter-spacing:.01em;line-height:1.25">Robot Agent Monitor</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;color:#8b949e;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Overview
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;background:rgba(68,147,248,.14);color:#8fc0ff;font-size:12.5px;font-weight:500;cursor:pointer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 L21 8 L21 16 L12 21 L3 16 L3 8 Z"/><path d="M12 3 L12 21 M3 8 L12 12 L21 8"/></svg>
+        Robots
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;color:#8b949e;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="8" r="2"/><circle cx="18" cy="16" r="2"/><line x1="7.6" y1="9.2" x2="16.4" y2="14.8"/></svg>
+        Joints
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;color:#8b949e;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="12" rx="2"/><circle cx="12" cy="13" r="3.2"/><path d="M9 7 L9 4.5 L13 4.5 L13 7"/></svg>
+        Sensors
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;color:#8b949e;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><line x1="12" y1="4" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="20"/><line x1="4" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="20" y2="12"/></svg>
+        Teleoperation
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;color:#8b949e;font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:#16191c;color:#cfd6dc">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5 L4 19 A8 3 0 0 0 20 19 L20 5"/><path d="M4 12 A8 3 0 0 0 20 12"/></svg>
+        Data
+      </div>
+    </div>
+
+    <div style="flex:1"></div>
+
+    <div style="border-top:1px solid #1c2024;padding-top:12px;display:flex;flex-direction:column;gap:7px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 6px">
+        <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:#8b949e"><span style="width:6px;height:6px;border-radius:50%;background:#3fb950"></span>Backend</div>
+        <div style="font-size:11.5px;color:#56d364">Connected</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 6px">
+        <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:#8b949e"><span style="width:6px;height:6px;border-radius:50%;background:#3fb950"></span>ROS Runtime</div>
+        <div style="font-size:11.5px;color:#56d364">Connected</div>
+      </div>
+      <div style="font-size:10px;color:#4a5158;padding:4px 6px 0">v0.1.0 · local</div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;position:relative">
+
+    <div style="height:58px;flex-shrink:0;border-bottom:1px solid #1c2024;background:#0e1113;display:flex;align-items:center;padding:0 20px;justify-content:space-between;gap:16px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;align-items:center;gap:6px;background:#16191c;border:1px solid #262b30;border-radius:6px;padding:6px 10px;font-size:12.5px;color:#d7dde2">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8b949e" stroke-width="1.8"><path d="M12 3 L21 8 L21 16 L12 21 L3 16 L3 8 Z"/></svg>
+          {{ topbarProfileName }}
+        </div>
+        <span style="color:#3a4046;font-size:13px">/</span>
+        <div style="display:flex;align-items:center;gap:6px;background:#16191c;border:1px solid #262b30;border-radius:6px;padding:6px 10px;font-size:12.5px;color:#d7dde2">
+          {{ topbarConfigName }}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <button onclick="{{ togglePending }}" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid #262b30;border-radius:6px;padding:6px 10px;font-size:12px;color:#98a2ad;cursor:pointer;font-family:inherit" style-hover="background:#16191c;color:#cfd6dc">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg>
+          Pending notes
+        </button>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:20px 26px 14px;display:flex;align-items:baseline;justify-content:space-between;flex-shrink:0">
+        <div>
+          <h1 style="margin:0;font-size:19px;font-weight:600;color:#eef1f3">Robots</h1>
+          <p style="margin:4px 0 0;font-size:12.5px;color:#8b949e">Manage robot profiles, configurations and URDF packages</p>
+        </div>
+        <button onclick="{{ openWizard }}" style="background:#4493f8;color:#0b0d0f;border:none;border-radius:6px;padding:9px 15px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit" style-hover="background:#5da0f9">+ Import Robot</button>
+      </div>
+
+      <div style="flex:1;display:flex;min-width:0;overflow-x:auto;overflow-y:hidden;padding:0 26px 20px;gap:0">
+
+        <div style="width:230px;flex-shrink:0;border:1px solid #1e2328;border-radius:8px 0 0 8px;background:#12151a;display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:12px 14px;border-bottom:1px solid #1c2024;font-size:11px;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:.05em">Profiles</div>
+          <sc-if value="{{ showEmptyProfiles }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center">
+              <div>
+                <div style="font-size:12px;color:#8b949e;margin-bottom:10px">No robot profiles yet.</div>
+                <button onclick="{{ openWizard }}" style="background:#4493f8;color:#0b0d0f;border:none;border-radius:5px;padding:7px 12px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit">Import Robot</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showProfileList }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;overflow:auto">
+              <sc-for list="{{ profiles }}" as="p" hint-placeholder-count="2">
+                <div onclick="{{ p.select }}" style="{{ p.rowStyle }}">
+                  <div style="font-size:12.5px;font-weight:500;color:#d7dde2">{{ p.name }}</div>
+                  <div style="font-size:11px;color:#6b757f;margin-top:2px">{{ p.configCountLabel }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="border-top:1px solid #1c2024;padding:8px 12px">
+            <button onclick="{{ toggleEmptyPreview }}" style="background:transparent;border:none;color:#4a5158;font-size:10px;cursor:pointer;font-family:inherit;padding:2px 0">preview: toggle empty state</button>
+          </div>
+        </div>
+
+        <div style="width:260px;flex-shrink:0;border-top:1px solid #1e2328;border-bottom:1px solid #1e2328;border-right:1px solid #1e2328;background:#101317;display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:12px 14px;border-bottom:1px solid #1c2024;display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:11px;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:.05em">Configurations</div>
+            <sc-if value="{{ hasActiveProfile }}" hint-placeholder-val="{{ true }}">
+              <button onclick="{{ openWizard }}" style="background:transparent;border:1px solid #262b30;border-radius:5px;padding:3px 8px;font-size:10.5px;color:#98a2ad;cursor:pointer;font-family:inherit" style-hover="background:#16191c;color:#cfd6dc">+ Upload</button>
+            </sc-if>
+          </div>
+          <sc-if value="{{ noProfileSelected }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;font-size:12px;color:#6b757f">Select a profile to see its configurations.</div>
+          </sc-if>
+          <sc-if value="{{ profileHasNoConfigs }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center">
+              <div>
+                <div style="font-size:12px;color:#8b949e;margin-bottom:10px">No configurations yet for this profile.</div>
+                <button onclick="{{ openWizard }}" style="background:transparent;color:#c3cad1;border:1px solid #2b3138;border-radius:5px;padding:7px 12px;font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit">Upload Configuration</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showConfigList }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;overflow:auto">
+              <sc-for list="{{ configs }}" as="c" hint-placeholder-count="2">
+                <div onclick="{{ c.select }}" style="{{ c.rowStyle }}">
+                  <div style="display:flex;align-items:center;justify-content:space-between">
+                    <div style="font-size:12.5px;font-weight:500;color:#d7dde2">{{ c.name }}</div>
+                    <span style="width:6px;height:6px;border-radius:50%;background:{{ c.dot }}"></span>
+                  </div>
+                  <div style="font-size:10.5px;color:#6b757f;margin-top:2px;font-family:'IBM Plex Mono',monospace">{{ c.jointCount }} joints</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="flex:1;min-width:500px;border:1px solid #1e2328;border-radius:0 8px 8px 0;background:#12151a;overflow:auto">
+          <sc-if value="{{ noConfigSelected }}" hint-placeholder-val="{{ false }}">
+            <div style="height:100%;display:flex;align-items:center;justify-content:center;color:#5a626a;font-size:12.5px">Select a configuration to inspect it.</div>
+          </sc-if>
+          <sc-if value="{{ hasActiveConfig }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column">
+              <div style="padding:16px 20px;border-bottom:1px solid #1c2024;display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0">
+                <sc-if value="{{ renaming }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <input value="{{ renameValue }}" oninput="{{ onRenameInput }}" style="background:#16191c;border:1px solid #4493f8;border-radius:5px;padding:6px 9px;font-size:14px;color:#eef1f3;font-family:inherit;width:220px" />
+                    <button onclick="{{ saveRename }}" style="background:#4493f8;color:#0b0d0f;border:none;border-radius:5px;padding:6px 10px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit">Save</button>
+                    <button onclick="{{ cancelRename }}" style="background:transparent;border:1px solid #262b30;border-radius:5px;padding:6px 10px;font-size:11.5px;color:#98a2ad;cursor:pointer;font-family:inherit">Cancel</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ notRenaming }}" hint-placeholder-val="{{ true }}">
+                  <div style="min-width:0;overflow:hidden">
+                    <div style="font-size:15px;font-weight:600;color:#eef1f3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ activeConfig.profileName }} · {{ activeConfig.name }}</div>
+                    <div style="font-size:11px;color:#6b757f;font-family:'IBM Plex Mono',monospace;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">robotConfigurationId = {{ activeConfig.id }} · used by Joints &amp; Sensors queries</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ notRenaming }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;gap:8px;flex-shrink:0">
+                    <button onclick="{{ startRename }}" style="background:transparent;border:1px solid #262b30;border-radius:5px;padding:6px 11px;font-size:11.5px;color:#98a2ad;cursor:pointer;font-family:inherit" style-hover="background:#16191c;color:#cfd6dc">Rename</button>
+                    <button onclick="{{ reloadModel }}" style="background:transparent;border:1px solid #262b30;border-radius:5px;padding:6px 11px;font-size:11.5px;color:#98a2ad;cursor:pointer;font-family:inherit" style-hover="background:#16191c;color:#cfd6dc">Reload model</button>
+                    <button onclick="{{ requestDeleteConfig }}" style="background:transparent;border:1px solid rgba(248,81,73,.35);border-radius:5px;padding:6px 11px;font-size:11.5px;color:#f85149;cursor:pointer;font-family:inherit" style-hover="background:rgba(248,81,73,.1)">Delete</button>
+                  </div>
+                </sc-if>
+              </div>
+
+              <div style="padding:16px 20px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px">
+                <div style="height:300px;background:#0c0e10;border:1px solid #1e2328;border-radius:8px;overflow:hidden">
+                  <robot-viewport mode="live" style="width:100%;height:100%;display:block;position:relative;overflow:hidden"></robot-viewport>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <div style="background:#181c21;border:1px solid #1e2328;border-radius:7px;padding:12px 14px">
+                    <div style="font-size:11px;color:#6b757f;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">URDF summary</div>
+                    <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><span style="width:6px;height:6px;border-radius:50%;background:#3fb950"></span><span style="font-size:12.5px;color:#56d364">Loaded and parsed</span></div>
+                    <div style="font-size:11.5px;color:#8b949e;font-family:'IBM Plex Mono',monospace">{{ activeConfig.linkCount }} links · {{ activeConfig.jointCount }} joints</div>
+                    <div style="font-size:10.5px;color:#5a626a;font-family:'IBM Plex Mono',monospace;margin-top:8px;word-break:break-all">{{ activeConfig.urdfPath }}</div>
+                  </div>
+                  <div style="background:#181c21;border:1px solid #1e2328;border-radius:7px;padding:12px 14px">
+                    <div style="font-size:11px;color:#6b757f;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Reference</div>
+                    <div style="font-size:11.5px;color:#8b949e">Created {{ activeConfig.createdAt }}</div>
+                    <div style="font-size:11.5px;color:{{ activeConfig.episodeNoteColor }};margin-top:4px">{{ activeConfig.episodeNote }}</div>
+                  </div>
+                  <div style="font-size:10.5px;color:#5a626a;line-height:1.5">Orbit: drag · Pan: shift+drag · Zoom: scroll. Toggle visual / collision / frames from the viewport toolbar.</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+      </div>
+    </div>
+
+    <sc-if value="{{ wizardOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(4,5,6,.6);z-index:20;display:flex;align-items:center;justify-content:center">
+        <div style="width:620px;max-height:88vh;background:#12151a;border:1px solid #262b30;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid #1c2024;display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:14px;font-weight:600;color:#eef1f3">Import Robot</div>
+            <button onclick="{{ closeWizard }}" style="background:transparent;border:none;color:#8b949e;cursor:pointer;font-size:18px;line-height:1;padding:2px">×</button>
+          </div>
+
+          <div style="padding:16px 20px;border-bottom:1px solid #1c2024;display:flex;align-items:center;gap:6px">
+            <sc-for list="{{ steps }}" as="st" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:6px;flex:1">
+                <div style="{{ st.circleStyle }}">{{ st.n }}</div>
+                <div style="font-size:10.5px;color:{{ st.labelColor }}">{{ st.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="padding:20px;overflow:auto;flex:1;min-height:260px">
+
+            <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;gap:8px">
+                  <button onclick="{{ setProfileModeExisting }}" style="{{ profileModeExistingStyle }}">Use existing profile</button>
+                  <button onclick="{{ setProfileModeNew }}" style="{{ profileModeNewStyle }}">Create new profile</button>
+                </div>
+                <sc-if value="{{ profileModeIsExisting }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ profilePickList }}" as="pp" hint-placeholder-count="2">
+                      <div onclick="{{ pp.select }}" style="{{ pp.style }}">
+                        <div style="font-size:12.5px;color:#d7dde2;font-weight:500">{{ pp.name }}</div>
+                        <div style="font-size:11px;color:#6b757f">{{ pp.description }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ profileModeIsNew }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <div>
+                      <label style="font-size:11.5px;color:#98a2ad;display:block;margin-bottom:5px">Name <span style="color:#f85149">*</span></label>
+                      <input value="{{ newProfileName }}" oninput="{{ onNewProfileNameInput }}" placeholder="e.g. Unitree G1" style="width:100%;background:#16191c;border:1px solid #262b30;border-radius:6px;padding:8px 10px;font-size:12.5px;color:#eef1f3;font-family:inherit" />
+                      <sc-if value="{{ profileNameError }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:#f85149;margin-top:5px">Name is required and must be unique.</div></sc-if>
+                    </div>
+                    <div>
+                      <label style="font-size:11.5px;color:#98a2ad;display:block;margin-bottom:5px">Description</label>
+                      <textarea value="{{ newProfileDesc }}" oninput="{{ onNewProfileDescInput }}" placeholder="Optional notes" style="width:100%;height:64px;background:#16191c;border:1px solid #262b30;border-radius:6px;padding:8px 10px;font-size:12.5px;color:#eef1f3;font-family:inherit;resize:none"></textarea>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="font-size:12.5px;color:#8b949e">Configuration for <b style="color:#d7dde2">{{ chosenProfileName }}</b></div>
+                <div>
+                  <label style="font-size:11.5px;color:#98a2ad;display:block;margin-bottom:5px">Name <span style="color:#f85149">*</span></label>
+                  <input value="{{ configName }}" oninput="{{ onConfigNameInput }}" placeholder="e.g. Stock, Head RGB-D Camera" style="width:100%;background:#16191c;border:1px solid #262b30;border-radius:6px;padding:8px 10px;font-size:12.5px;color:#eef1f3;font-family:inherit" />
+                  <sc-if value="{{ configNameError }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:#f85149;margin-top:5px">{{ configNameErrorText }}</div></sc-if>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="background:rgba(210,153,34,.12);border:1px solid rgba(210,153,34,.28);border-radius:7px;padding:9px 12px;font-size:11.5px;color:#e3b341;line-height:1.5">API extension pending — backend currently accepts one .urdf/.xml file up to 10MB. Complete package upload (mesh/STL/textures) is the target UX shown here.</div>
+
+                <div style="display:flex;gap:6px">
+                  <button onclick="{{ setUploadClean }}" style="{{ uploadCleanStyle }}">Preview: clean package</button>
+                  <button onclick="{{ setUploadMulti }}" style="{{ uploadMultiStyle }}">Preview: multiple URDFs</button>
+                  <button onclick="{{ setUploadBad }}" style="{{ uploadBadStyle }}">Preview: unsupported file</button>
+                </div>
+
+                <div style="border:1px dashed #2b3138;border-radius:8px;padding:22px;text-align:center;background:#0f1215">
+                  <div style="font-size:12.5px;color:#98a2ad;margin-bottom:8px">Drag &amp; drop the robot package folder or archive here</div>
+                  <button style="background:transparent;border:1px solid #262b30;border-radius:5px;padding:6px 12px;font-size:11.5px;color:#c3cad1;cursor:pointer;font-family:inherit">Browse files</button>
+                </div>
+
+                <sc-if value="{{ uploadBadFlag }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.28);border-radius:6px;padding:9px 12px">
+                    <span style="font-size:12px;color:#f85149">✕</span>
+                    <div style="font-size:12px;color:#d7dde2">wing_texture.blend is not a supported file type. Remove it and re-upload.</div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ uploadHasFileTree }}" hint-placeholder-val="{{ true }}">
+                  <div style="border:1px solid #1e2328;border-radius:7px;overflow:hidden">
+                    <div style="padding:8px 12px;background:#181c21;font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.04em">Package contents</div>
+                    <sc-for list="{{ uploadFileTree }}" as="f" hint-placeholder-count="3">
+                      <div style="padding:7px 12px;font-size:11.5px;color:#c3cad1;font-family:'IBM Plex Mono',monospace;border-top:1px solid #1c2024">{{ f.path }}</div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ uploadMultiFlag }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <div style="font-size:11.5px;color:#e3b341">Multiple .urdf files found. Select the main URDF to continue.</div>
+                    <sc-for list="{{ mainUrdfChoices }}" as="m" hint-placeholder-count="2">
+                      <div onclick="{{ m.select }}" style="{{ m.style }}">{{ m.path }}</div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;gap:6px">
+                  <button onclick="{{ setParseSuccess }}" style="{{ parseSuccessStyle }}">Preview: success</button>
+                  <button onclick="{{ setParseError }}" style="{{ parseErrorStyle }}">Preview: error</button>
+                </div>
+                <sc-if value="{{ parseIsSuccess }}" hint-placeholder-val="{{ true }}">
+                  <div style="background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.28);border-radius:7px;padding:12px 14px">
+                    <div style="font-size:12.5px;color:#56d364;font-weight:600;margin-bottom:8px">Parsing complete</div>
+                    <div style="font-size:11.5px;color:#c3cad1;font-family:'IBM Plex Mono',monospace">robot name: g1_description</div>
+                    <div style="font-size:11.5px;color:#c3cad1;font-family:'IBM Plex Mono',monospace">24 links · 20 joints</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ parseIsError }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.28);border-radius:7px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+                    <div style="font-size:12.5px;color:#f85149;font-weight:600">Parsing failed — 2 issues found</div>
+                    <div style="font-size:11.5px;color:#d7dde2">· Missing parent link "torso_2" referenced by joint "neck"</div>
+                    <div style="font-size:11.5px;color:#d7dde2">· Duplicate joint name "left_elbow"</div>
+                    <button onclick="{{ backToUpload }}" style="align-self:flex-start;margin-top:4px;background:transparent;border:1px solid rgba(248,81,73,.35);border-radius:5px;padding:6px 11px;font-size:11.5px;color:#f85149;cursor:pointer;font-family:inherit">Re-upload package</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isStep5 }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <div style="font-size:12.5px;color:#8b949e">Robot ready to open.</div>
+                <div style="background:#181c21;border:1px solid #1e2328;border-radius:7px;padding:14px">
+                  <div style="font-size:13.5px;font-weight:600;color:#eef1f3;margin-bottom:6px">{{ chosenProfileName }} · {{ configName }}</div>
+                  <div style="font-size:11.5px;color:#8b949e;font-family:'IBM Plex Mono',monospace">24 links · 20 joints</div>
+                  <div style="font-size:10.5px;color:#5a626a;font-family:'IBM Plex Mono',monospace;margin-top:6px">data/robots/new/new/model.urdf</div>
+                </div>
+                <div style="display:flex;gap:10px">
+                  <button onclick="{{ finishWizard }}" style="background:#4493f8;color:#0b0d0f;border:none;border-radius:6px;padding:9px 15px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Open Robot</button>
+                  <button onclick="{{ finishWizard }}" style="background:transparent;color:#c3cad1;border:1px solid #2b3138;border-radius:6px;padding:9px 15px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit">Configure Joint Interfaces</button>
+                </div>
+              </div>
+            </sc-if>
+
+          </div>
+
+          <sc-if value="{{ showWizardFooterNav }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:14px 20px;border-top:1px solid #1c2024;display:flex;justify-content:space-between">
+              <button onclick="{{ wizardBack }}" style="{{ backButtonStyle }}">Back</button>
+              <button onclick="{{ wizardNext }}" style="background:#4493f8;color:#0b0d0f;border:none;border-radius:6px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Next</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ deleteOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(4,5,6,.6);z-index:20;display:flex;align-items:center;justify-content:center">
+        <div style="width:440px;background:#12151a;border:1px solid #262b30;border-radius:10px;padding:20px">
+          <sc-if value="{{ deleteBlocked }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:14px;font-weight:600;color:#eef1f3;margin-bottom:10px">Cannot delete "{{ deleteName }}"</div>
+            <div style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.28);border-radius:7px;padding:10px 12px;font-size:12px;color:#d7dde2;line-height:1.6;margin-bottom:14px">This configuration is referenced by {{ deleteEpisodeCount }} episodes. Delete or reassign those episodes before deleting the configuration.</div>
+            <div style="display:flex;justify-content:flex-end;gap:10px">
+              <button onclick="{{ closeDelete }}" style="background:transparent;border:1px solid #2b3138;border-radius:6px;padding:8px 14px;font-size:12.5px;color:#c3cad1;cursor:pointer;font-family:inherit">Close</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ deleteNotBlocked }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:14px;font-weight:600;color:#eef1f3;margin-bottom:10px">Delete "{{ deleteName }}"?</div>
+            <div style="font-size:12.5px;color:#c3cad1;line-height:1.6;margin-bottom:14px">{{ deleteImpactText }} This cannot be undone.</div>
+            <div style="display:flex;justify-content:flex-end;gap:10px">
+              <button onclick="{{ closeDelete }}" style="background:transparent;border:1px solid #2b3138;border-radius:6px;padding:8px 14px;font-size:12.5px;color:#c3cad1;cursor:pointer;font-family:inherit">Cancel</button>
+              <button onclick="{{ confirmDelete }}" style="background:#f85149;color:#1a0b0a;border:none;border-radius:6px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Delete</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ pendingOpen }}" hint-placeholder-val="{{ false }}">
+      <div onclick="{{ togglePending }}" style="position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:9"></div>
+      <div style="position:absolute;top:0;right:0;bottom:0;width:340px;background:#12151a;border-left:1px solid #22272c;z-index:10;padding:18px;display:flex;flex-direction:column;gap:12px;overflow:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:13px;font-weight:600;color:#dde3e8">Pending backend notes</div>
+          <button onclick="{{ togglePending }}" style="background:transparent;border:none;color:#8b949e;cursor:pointer;font-size:16px;line-height:1;padding:2px">×</button>
+        </div>
+        <div style="background:#181c21;border:1px solid #262b30;border-radius:7px;padding:10px 12px">
+          <div style="font-size:11px;font-weight:600;color:#e3b341;margin-bottom:4px">API extension pending</div>
+          <div style="font-size:12px;color:#c3cad1;line-height:1.5">Configuration create only accepts a single .urdf/.xml file today. Full package upload (mesh/STL/texture) needs a new multipart contract.</div>
+        </div>
+        <div style="background:#181c21;border:1px solid #262b30;border-radius:7px;padding:10px 12px">
+          <div style="font-size:11px;font-weight:600;color:#e3b341;margin-bottom:4px">Runtime/API pending</div>
+          <div style="font-size:12px;color:#c3cad1;line-height:1.5">3D viewer here shows the model at URDF zero pose; live pose sync from joint state has no data API yet.</div>
+        </div>
+        <div style="background:#181c21;border:1px solid #262b30;border-radius:7px;padding:10px 12px">
+          <div style="font-size:11px;font-weight:600;color:#e3b341;margin-bottom:4px">List/query API pending</div>
+          <div style="font-size:12px;color:#c3cad1;line-height:1.5">Profile and configuration lists use query-by-IDs today; list-all is not yet available.</div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const PROFILES_SEED = [
+  { id:1, name:'Unitree G1', description:'Humanoid robot for ROS 2 simulation', configs:[
+      { id:11, name:'Stock', linkCount:24, jointCount:20, createdAt:'Jul 2, 2026', urdfPath:'data/robots/1/11/model.urdf', episodeCount:0 },
+      { id:12, name:'Head RGB-D Camera', linkCount:26, jointCount:20, createdAt:'Jul 14, 2026', urdfPath:'data/robots/1/12/model.urdf', episodeCount:3 }
+    ] },
+  { id:2, name:'Test Arm', description:'6-DoF arm test rig', configs:[] }
+];
+
+class Component extends DCLogic {
+  state = {
+    profiles: PROFILES_SEED,
+    activeProfileId: 1,
+    activeConfigId: 11,
+    showEmptyPreview: false,
+    renaming: false, renameValue:'',
+    pendingOpen: false,
+    deleteTarget: null,
+    wizardOpen: false, wizardStep: 1,
+    profileMode: 'existing', chosenProfileId: 1,
+    newProfileName: '', newProfileDesc: '', profileNameError: false,
+    configName: '', configNameError: false, configNameErrorText: '',
+    uploadOutcome: 'clean', mainUrdfChoice: 0,
+    parseOutcome: 'success'
+  };
+
+  findProfile(id) { return this.state.profiles.find(p => p.id === id); }
+  findConfig() {
+    const p = this.findProfile(this.state.activeProfileId);
+    return p ? p.configs.find(c => c.id === this.state.activeConfigId) : null;
+  }
+
+  openWizard() {
+    this.setState({
+      wizardOpen: true, wizardStep: 1, profileMode: 'existing',
+      chosenProfileId: this.state.activeProfileId || (this.state.profiles[0] && this.state.profiles[0].id),
+      newProfileName: '', newProfileDesc: '', profileNameError: false,
+      configName: '', configNameError: false,
+      uploadOutcome: 'clean', mainUrdfChoice: 0, parseOutcome: 'success'
+    });
+  }
+  closeWizard() { this.setState({ wizardOpen: false }); }
+
+  wizardNext() {
+    const st = this.state;
+    if (st.wizardStep === 1) {
+      if (st.profileMode === 'new') {
+        if (!st.newProfileName.trim()) { this.setState({ profileNameError: true }); return; }
+      }
+      this.setState({ wizardStep: 2, profileNameError: false });
+      return;
+    }
+    if (st.wizardStep === 2) {
+      if (!st.configName.trim()) { this.setState({ configNameError: true, configNameErrorText: 'Name is required.' }); return; }
+      const p = this.findProfile(st.chosenProfileId);
+      if (p && p.configs.some(c => c.name.toLowerCase() === st.configName.trim().toLowerCase())) {
+        this.setState({ configNameError: true, configNameErrorText: 'A configuration with this name already exists in this profile.' });
+        return;
+      }
+      this.setState({ wizardStep: 3, configNameError: false });
+      return;
+    }
+    if (st.wizardStep === 3) {
+      if (st.uploadOutcome === 'bad') return;
+      this.setState({ wizardStep: 4 });
+      return;
+    }
+    if (st.wizardStep === 4) {
+      if (st.parseOutcome === 'error') return;
+      this.setState({ wizardStep: 5 });
+      return;
+    }
+  }
+  wizardBack() { this.setState(s => ({ wizardStep: Math.max(1, s.wizardStep - 1) })); }
+
+  finishWizard() {
+    const st = this.state;
+    let profiles = st.profiles.slice();
+    let profileId = st.chosenProfileId;
+    let profileName = st.newProfileName || 'New Profile';
+    if (st.profileMode === 'new') {
+      profileId = Math.max(0, ...profiles.map(p => p.id)) + 1;
+      profiles = profiles.concat([{ id: profileId, name: st.newProfileName.trim(), description: st.newProfileDesc, configs: [] }]);
+    }
+    const configId = Math.max(0, ...profiles.flatMap(p => p.configs.map(c => c.id))) + 1;
+    profiles = profiles.map(p => p.id === profileId ? {
+      ...p, configs: p.configs.concat([{
+        id: configId, name: st.configName.trim(), linkCount: 24, jointCount: 20,
+        createdAt: 'just now', urdfPath: `data/robots/${profileId}/${configId}/model.urdf`, episodeCount: 0
+      }])
+    } : p);
+    this.setState({ profiles, activeProfileId: profileId, activeConfigId: configId, wizardOpen: false });
+  }
+
+  renderVals() {
+    const st = this.state;
+    const activeProfile = this.findProfile(st.activeProfileId);
+    const activeConfigRaw = this.findConfig();
+
+    const profiles = st.profiles.map(p => ({
+      id: p.id, name: p.name,
+      configCountLabel: p.configs.length === 1 ? '1 configuration' : `${p.configs.length} configurations`,
+      select: () => this.setState({ activeProfileId: p.id, activeConfigId: (p.configs[0] && p.configs[0].id) || null }),
+      rowStyle: `padding:10px 14px;cursor:pointer;border-bottom:1px solid #1c2024;${p.id === st.activeProfileId ? 'background:rgba(68,147,248,.1);border-left:2px solid #4493f8' : 'border-left:2px solid transparent'}`
+    }));
+
+    const configs = activeProfile ? activeProfile.configs.map(c => ({
+      id: c.id, name: c.name, jointCount: c.jointCount,
+      dot: c.id === st.activeConfigId ? '#4493f8' : '#3fb950',
+      select: () => this.setState({ activeConfigId: c.id, renaming: false }),
+      rowStyle: `padding:10px 14px;cursor:pointer;border-bottom:1px solid #1c2024;${c.id === st.activeConfigId ? 'background:rgba(68,147,248,.1);border-left:2px solid #4493f8' : 'border-left:2px solid transparent'}`
+    })) : [];
+
+    const activeConfig = activeConfigRaw ? {
+      id: activeConfigRaw.id, name: activeConfigRaw.name, profileName: activeProfile.name,
+      linkCount: activeConfigRaw.linkCount, jointCount: activeConfigRaw.jointCount,
+      createdAt: activeConfigRaw.createdAt, urdfPath: activeConfigRaw.urdfPath,
+      episodeNote: activeConfigRaw.episodeCount > 0 ? `Referenced by ${activeConfigRaw.episodeCount} episodes` : 'Not referenced by any episode',
+      episodeNoteColor: activeConfigRaw.episodeCount > 0 ? '#e3b341' : '#6b757f'
+    } : null;
+
+    const steps = [
+      { n:1, label:'Profile' }, { n:2, label:'Configuration' }, { n:3, label:'Upload' },
+      { n:4, label:'Parse' }, { n:5, label:'Complete' }
+    ].map(s => {
+      const isCurrent = s.n === st.wizardStep;
+      const isDone = s.n < st.wizardStep;
+      const bg = isCurrent ? '#4493f8' : (isDone ? '#3fb950' : '#1c2024');
+      const fg = isCurrent || isDone ? '#0b0d0f' : '#6b757f';
+      return {
+        n: s.n, label: s.label,
+        circleStyle: `width:20px;height:20px;border-radius:50%;background:${bg};color:${fg};font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0`,
+        labelColor: isCurrent ? '#dde3e8' : '#6b757f'
+      };
+    });
+
+    const chosenProfile = this.findProfile(st.chosenProfileId);
+    const profilePickList = st.profiles.map(p => ({
+      id: p.id, name: p.name, description: p.description || 'No description',
+      select: () => this.setState({ chosenProfileId: p.id }),
+      style: `padding:10px 12px;border-radius:6px;cursor:pointer;border:1px solid ${p.id === st.chosenProfileId ? 'rgba(68,147,248,.4)' : '#1e2328'};background:${p.id === st.chosenProfileId ? 'rgba(68,147,248,.1)' : '#181c21'}`
+    }));
+
+    const uploadFileTreeByOutcome = {
+      clean: [{ path:'g1_description.urdf' }, { path:'meshes/left_arm.stl' }, { path:'meshes/right_arm.stl' }, { path:'textures/body.png' }],
+      multi: [{ path:'g1_description.urdf' }, { path:'g1_description_v2.urdf' }, { path:'meshes/left_arm.stl' }],
+      bad: [{ path:'g1_description.urdf' }, { path:'wing_texture.blend' }]
+    };
+    const mainUrdfChoices = [
+      { path:'g1_description.urdf', select: () => this.setState({ mainUrdfChoice: 0 }) },
+      { path:'g1_description_v2.urdf', select: () => this.setState({ mainUrdfChoice: 1 }) }
+    ].map((m, idx) => ({ ...m, style: `padding:8px 12px;border-radius:6px;cursor:pointer;font-size:11.5px;font-family:'IBM Plex Mono',monospace;color:#d7dde2;border:1px solid ${idx === st.mainUrdfChoice ? 'rgba(68,147,248,.4)' : '#1e2328'};background:${idx === st.mainUrdfChoice ? 'rgba(68,147,248,.1)' : '#181c21'}` }));
+
+    const btnStyle = (active) => `font-size:11px;padding:6px 10px;border-radius:5px;border:1px solid ${active ? 'rgba(68,147,248,.4)' : '#262b30'};background:${active ? 'rgba(68,147,248,.16)' : 'transparent'};color:${active ? '#8fc0ff' : '#8b949e'};cursor:pointer;font-family:inherit`;
+
+    const deleteTarget = st.deleteTarget;
+    let deleteName = '', deleteBlocked = false, deleteEpisodeCount = 0, deleteImpactText = '';
+    if (deleteTarget) {
+      if (deleteTarget.type === 'config') {
+        const cfg = activeProfile.configs.find(c => c.id === deleteTarget.id);
+        deleteName = cfg.name;
+        deleteBlocked = cfg.episodeCount > 0;
+        deleteEpisodeCount = cfg.episodeCount;
+        deleteImpactText = 'This removes its joint interfaces, sensors and pose presets.';
+      }
+    }
+
+    return {
+      profiles, showProfileList: !st.showEmptyPreview, showEmptyProfiles: st.showEmptyPreview,
+      toggleEmptyPreview: () => this.setState(s => ({ showEmptyPreview: !s.showEmptyPreview })),
+      hasActiveProfile: !!activeProfile, noProfileSelected: !activeProfile,
+      profileHasNoConfigs: !!activeProfile && activeProfile.configs.length === 0,
+      showConfigList: !!activeProfile && activeProfile.configs.length > 0,
+      configs,
+      hasActiveConfig: !!activeConfig, noConfigSelected: !activeConfig,
+      activeConfig,
+      topbarProfileName: activeProfile ? activeProfile.name : 'No robot selected',
+      topbarConfigName: activeConfig ? activeConfig.name : '—',
+
+      renaming: st.renaming, notRenaming: !st.renaming, renameValue: st.renameValue,
+      startRename: () => this.setState({ renaming: true, renameValue: activeConfig ? activeConfig.name : '' }),
+      cancelRename: () => this.setState({ renaming: false }),
+      onRenameInput: (e) => this.setState({ renameValue: e.target.value }),
+      saveRename: () => {
+        const profs = st.profiles.map(p => p.id !== st.activeProfileId ? p : {
+          ...p, configs: p.configs.map(c => c.id !== st.activeConfigId ? c : { ...c, name: st.renameValue.trim() || c.name })
+        });
+        this.setState({ profiles: profs, renaming: false });
+      },
+      reloadModel: () => {},
+
+      pendingOpen: st.pendingOpen, togglePending: () => this.setState(s => ({ pendingOpen: !s.pendingOpen })),
+
+      requestDeleteConfig: () => this.setState({ deleteTarget: { type:'config', id: st.activeConfigId } }),
+      deleteOpen: !!deleteTarget, deleteBlocked, deleteNotBlocked: !!deleteTarget && !deleteBlocked,
+      deleteName, deleteEpisodeCount, deleteImpactText,
+      closeDelete: () => this.setState({ deleteTarget: null }),
+      confirmDelete: () => {
+        const profs = st.profiles.map(p => p.id !== st.activeProfileId ? p : { ...p, configs: p.configs.filter(c => c.id !== st.activeConfigId) });
+        const remaining = profs.find(p => p.id === st.activeProfileId).configs;
+        this.setState({ profiles: profs, deleteTarget: null, activeConfigId: remaining[0] ? remaining[0].id : null });
+      },
+
+      openWizard: () => this.openWizard(), closeWizard: () => this.closeWizard(),
+      wizardOpen: st.wizardOpen, wizardNext: () => this.wizardNext(), wizardBack: () => this.wizardBack(),
+      finishWizard: () => this.finishWizard(),
+      showWizardFooterNav: st.wizardStep < 5,
+      backButtonStyle: `background:transparent;border:1px solid #262b30;border-radius:6px;padding:8px 16px;font-size:12.5px;color:${st.wizardStep === 1 ? '#4a5158' : '#98a2ad'};cursor:${st.wizardStep === 1 ? 'default' : 'pointer'};font-family:inherit`,
+      steps,
+      isStep1: st.wizardStep === 1, isStep2: st.wizardStep === 2, isStep3: st.wizardStep === 3, isStep4: st.wizardStep === 4, isStep5: st.wizardStep === 5,
+
+      profileModeIsExisting: st.profileMode === 'existing', profileModeIsNew: st.profileMode === 'new',
+      setProfileModeExisting: () => this.setState({ profileMode: 'existing' }),
+      setProfileModeNew: () => this.setState({ profileMode: 'new' }),
+      profileModeExistingStyle: btnStyle(st.profileMode === 'existing'), profileModeNewStyle: btnStyle(st.profileMode === 'new'),
+      profilePickList,
+      newProfileName: st.newProfileName, newProfileDesc: st.newProfileDesc, profileNameError: st.profileNameError,
+      onNewProfileNameInput: (e) => this.setState({ newProfileName: e.target.value }),
+      onNewProfileDescInput: (e) => this.setState({ newProfileDesc: e.target.value }),
+
+      chosenProfileName: st.profileMode === 'new' ? (st.newProfileName || 'New Profile') : (chosenProfile ? chosenProfile.name : ''),
+      configName: st.configName, configNameError: st.configNameError, configNameErrorText: st.configNameErrorText,
+      onConfigNameInput: (e) => this.setState({ configName: e.target.value }),
+
+      setUploadClean: () => this.setState({ uploadOutcome: 'clean' }),
+      setUploadMulti: () => this.setState({ uploadOutcome: 'multi' }),
+      setUploadBad: () => this.setState({ uploadOutcome: 'bad' }),
+      uploadCleanStyle: btnStyle(st.uploadOutcome === 'clean'), uploadMultiStyle: btnStyle(st.uploadOutcome === 'multi'), uploadBadStyle: btnStyle(st.uploadOutcome === 'bad'),
+      uploadBadFlag: st.uploadOutcome === 'bad', uploadMultiFlag: st.uploadOutcome === 'multi',
+      uploadHasFileTree: true, uploadFileTree: uploadFileTreeByOutcome[st.uploadOutcome],
+      mainUrdfChoices,
+      backToUpload: () => this.setState({ wizardStep: 3 }),
+
+      setParseSuccess: () => this.setState({ parseOutcome: 'success' }), setParseError: () => this.setState({ parseOutcome: 'error' }),
+      parseSuccessStyle: btnStyle(st.parseOutcome === 'success'), parseErrorStyle: btnStyle(st.parseOutcome === 'error'),
+      parseIsSuccess: st.parseOutcome === 'success', parseIsError: st.parseOutcome === 'error'
+    };
+  }
+}
+
+</script>
+</body>
+</html>
