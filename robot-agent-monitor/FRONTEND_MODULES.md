@@ -487,7 +487,7 @@ Trong MVP, route `/training` có thể chỉ hiển thị trạng thái `Planned
 Chỉ chứa setting thuộc frontend/application, ví dụ:
 
 - backend API URL;
-- WebSocket/SignalR URL nếu không suy ra từ API URL;
+- WebSocket URL nếu không suy ra từ API URL;
 - theme;
 - chart history duration;
 - 3D viewer preferences.

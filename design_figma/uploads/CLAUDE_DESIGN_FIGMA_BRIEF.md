@@ -120,7 +120,7 @@ Overview reads status from every module.
 Khi có mâu thuẫn, ưu tiên theo thứ tự:
 
 1. Domain và phạm vi sản phẩm trong brief này.
-2. `Architecture.md` và code C# hiện tại.
+2. README và code của backend Rust hiện tại.
 3. `03_robotagent_local_database_codex.md` cho schema mục tiêu.
 4. `FRONTEND_MODULES.md` trong project frontend cho module roadmap.
 
@@ -132,21 +132,19 @@ File/class `JointInterfaceJoints` còn tồn tại trong working tree là phần
 
 ```text
 Next.js Frontend
-       ↓ HTTP; realtime channel pending
-C# ASP.NET Core Backend
-       ↓ wrapper calls
-C++ ROS 2 Wrapper
-       ↓
+       ↓ HTTP, WebSocket /api/ros/ws; camera qua WebRTC (WHEP)
+Rust Backend (axum)
+       ↓ rclrs
 ROS 2 topics / actions
        ↓
 Simulator hoặc robot driver
 ```
 
 - Chỉ có một người dùng local; không thiết kế login, account, role hoặc permission.
-- C# và frontend chỉ làm việc ở tầng ROS.
+- Backend Rust và frontend chỉ làm việc ở tầng ROS.
 - Không thiết kế motor driver, encoder, firmware, USB, CAN/EtherCAT hoặc bus phần cứng.
-- ROS node parameters, domain ID, namespace, QoS và khác biệt ROS build thuộc C++/deploy configuration; không đưa vào database hoặc form frontend.
-- C# chỉ cần chuyển cho C++: `operation`, ROS endpoint và ROS data type.
+- ROS node parameters, domain ID, namespace, QoS và khác biệt ROS build thuộc deploy configuration của backend; không đưa vào database hoặc form frontend.
+- Backend chỉ cần lấy từ cấu hình: `operation`, ROS endpoint và ROS data type.
 - SQLite lưu cấu hình và metadata; không lưu JSON trong các cột.
 - URDF assets và MCAP là file; database chỉ lưu đường dẫn.
 - Joint/link/frame được parse từ URDF vào memory, không có bảng riêng.
@@ -170,7 +168,7 @@ Entities
 
 ### Controller
 
-- ASP.NET Core REST entry points.
+- REST entry points của axum.
 - Validate format cơ bản qua validators.
 - Map request/response và gọi Business.
 - Không truy cập database trực tiếp.
@@ -183,9 +181,9 @@ Entities
 
 ### Infrastructure
 
-- Dapper + SQLite.
+- rusqlite + SQLite qua `DapperExtensions`.
 - Generic `BaseDA<T>` cùng các DA theo module.
-- File URDF được lưu dưới data root cấu hình trong `appsettings.json`.
+- File URDF được lưu dưới data root cấu hình bằng biến `URDF_DATA_ROOT`.
 
 ### Entities/contracts
 
@@ -216,8 +214,7 @@ Thiết kế Figma chỉ cần phản ánh hành vi API và domain; không hiể
 ### Chưa có contract hoàn chỉnh hoặc còn đang phát triển
 
 - ROS graph discovery.
-- C++ runtime integration trong ASP.NET startup.
-- WebSocket/SignalR realtime streams.
+- Camera WebRTC (WHEP) trong backend Rust.
 - 3D viewer data API.
 - Teleoperation command API.
 - MCAP record/replay API.
