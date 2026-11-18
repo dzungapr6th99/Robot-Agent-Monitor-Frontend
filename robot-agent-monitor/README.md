@@ -16,7 +16,7 @@ Mở http://localhost:3000. Sửa `appsettings.json` để đặt địa chỉ R
 
 Production dùng `npm run build` rồi `npm start`. Build lại khi đổi cấu hình proxy hoặc các giá trị browser. Launcher dùng `FRONTEND_HOST` và `FRONTEND_PORT` trong JSON, có thể ghi đè bằng biến môi trường.
 
-Deploy lên Jetson (đẩy code, build, khởi động lại cả backend lẫn frontend) do script deploy ở cấp project Robot đảm nhiệm, bên ngoài repo này. Repo frontend không chứa launcher riêng cho Jetson.
+Deploy lên Jetson (backend lẫn frontend) hiện làm theo `deploy/jetson-home/README.md` trong repo backend Rust; launcher frontend là `start-frontend.sh` ở đó.
 
 ## Chức năng
 
