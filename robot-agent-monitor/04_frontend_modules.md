@@ -1,6 +1,6 @@
 # RobotAgentMonitor — Frontend Modules
 
-Next.js + three.js. Chạy trên UI do agent tự serve. Mọi dữ liệu đi qua agent C#, không nói trực tiếp với ROS.
+Next.js + three.js. Chạy trên UI do agent tự serve. Mọi dữ liệu đi qua backend Rust, không nói trực tiếp với ROS. Camera xem qua WebRTC, signaling theo WHEP.
 
 ---
 

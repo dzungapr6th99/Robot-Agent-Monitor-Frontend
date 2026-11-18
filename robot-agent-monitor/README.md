@@ -14,7 +14,9 @@ npm run dev
 
 Mở http://localhost:3000. Sửa `appsettings.json` để đặt địa chỉ Rust cho proxy Next.js, đường dẫn API browser, origin dùng khi dev và giới hạn upload URDF. Biến môi trường cùng tên ghi đè `BACKEND_URL`, `NEXT_PUBLIC_API_BASE_URL` và `NEXT_PUBLIC_URDF_MAX_BYTES`. Giới hạn upload cần khớp với backend.
 
-Production dùng `npm run build` rồi `npm start`. Build lại khi đổi cấu hình proxy hoặc các giá trị browser. Launcher Jetson dùng `FRONTEND_HOST` và `FRONTEND_PORT` trong JSON, có thể ghi đè bằng biến môi trường.
+Production dùng `npm run build` rồi `npm start`. Build lại khi đổi cấu hình proxy hoặc các giá trị browser. Launcher dùng `FRONTEND_HOST` và `FRONTEND_PORT` trong JSON, có thể ghi đè bằng biến môi trường.
+
+Deploy lên Jetson (đẩy code, build, khởi động lại cả backend lẫn frontend) do script deploy ở cấp project Robot đảm nhiệm, bên ngoài repo này. Repo frontend không chứa launcher riêng cho Jetson.
 
 ## Chức năng
 
