@@ -3,6 +3,15 @@ export interface Entity {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export type VlaProfile = {
+  id: string;
+  model: "smolvla" | "groot";
+  version: string;
+};
+export type VlaMessage = { role: "Operator" | "Robot"; text: string };
+export type VlaCommandResult = { publishedSteps: number };
+export type VlaStopResult = { stopping: boolean };
 export interface RobotProfile extends Entity {
   name: string;
   description?: string;
