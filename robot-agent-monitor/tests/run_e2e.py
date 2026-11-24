@@ -81,9 +81,7 @@ def main():
     # Put timestamp columns before table-level constraints.
     parts=fields.split(", UNIQUE("); columns=parts[0]; constraint=", UNIQUE("+parts[1] if len(parts)>1 else ""
     con.execute(f"CREATE TABLE {table} (id INTEGER PRIMARY KEY, {columns}, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP{constraint})")
-  models=temp/"profiles.json"
-  models.write_text(json.dumps([{"id":"test-arm","model":"smolvla","version":"v1"}]),encoding="utf-8")
-  env=dict(os.environ,ROBOT_AGENT_DATABASE=str(db),URDF_DATA_ROOT=str(temp/"assets"),ROS_ENABLED="false",AGENT_LISTEN="127.0.0.1:18080",BACKEND_URL="http://127.0.0.1:18080",NEXT_TELEMETRY_DISABLED="1",VLA_MODELS_FILE=str(models),ROS_TOPICS_FILE=str(RUST/"deploy/yellowarm-sim/ros-topics.json"),VLA_URL="http://127.0.0.1:8091/",VLA_COMMAND_TOPIC="/yellowarm_sim/joint_command",VLA_STATE_TOPIC="/yellowarm_sim/joint_states",REALTIME_ALLOWED_ORIGINS="http://127.0.0.1:3100")
+  env=dict(os.environ,ROBOT_AGENT_DATABASE=str(db),URDF_DATA_ROOT=str(temp/"assets"),VLA_DATA_ROOT=str(temp/"assets"),ROS_ENABLED="false",AGENT_LISTEN="127.0.0.1:18080",BACKEND_URL="http://127.0.0.1:18080",NEXT_TELEMETRY_DISABLED="1",ROS_TOPICS_FILE=str(RUST/"deploy/yellowarm-sim/ros-topics.json"),VLA_COMMAND_TOPIC="/yellowarm_sim/joint_command",VLA_STATE_TOPIC="/yellowarm_sim/joint_states",REALTIME_ALLOWED_ORIGINS="http://127.0.0.1:3100")
   for key in ["ROBOT_CONFIGURATION_ID"]: env.pop(key,None)
   processes=[]
   logs=ROOT/".e2e-logs";logs.mkdir(exist_ok=True)

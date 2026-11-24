@@ -22,7 +22,9 @@ Deploy lên Jetson (backend lẫn frontend) hiện làm theo `deploy/jetson-home
 
 - Shell: navigation, configuration selector lưu localStorage, trạng thái kết nối, retry/toast.
 - Overview: readiness, viewer URDF, trạng thái interface/sensor, diagnostics, recent episodes.
-- Robots: profile CRUD; wizard 5 bước import files/folder/ZIP; chọn main URDF, validate XML/link/joint; lưu configuration và assets; rename/reload/delete với xác nhận và chặn episode reference.
+- Robots (`/robots`): xem mô hình 3D URDF theo profile/configuration; nút Upload trỏ sang `/urdf-models`.
+- URDF Models (`/urdf-models`): danh sách, tìm kiếm theo tên/profile/`urdfPath`, số joint, số camera, số model VLA; chọn URDF đồng bộ với sidebar; wizard upload URDF; đổi tên; khóa nút xóa khi URDF còn model VLA.
+- VLA Models (`/vla-models`): chọn URDF trước rồi quản lý model VLA của URDF đó; kéo thả gói `.zip` có thanh tiến độ; tìm kiếm (debounce 300ms); sửa tên/mô tả; xóa có xác nhận và báo lỗi 409 nếu đang nạp/chạy; panel chi tiết hiển thị `jointNames`, camera kèm topic ROS và trạng thái đối chiếu với bảng `sensors`, input/output và `formatVersion`; badge runtime từ `/api/vla/status`.
 - Viewer: model URDF thật, mesh theo khả năng loader, package:// qua asset manifest; orbit/pan/zoom/reset/fullscreen; visual/collision/frames/grid; chọn joint; đồng bộ JointState; báo lỗi asset.
 - Joints: live position/velocity/effort/limits, search/filter group, stale/missing; position chart 120 samples với pause/resume; interface CRUD; group CRUD, member CRUD/reorder và thứ tự group.
 - Sensors: sensor/stream CRUD, trạng thái nhận dữ liệu cho type đã hỗ trợ. Chưa có image/depth/IMU widgets hay WebRTC player.
@@ -33,16 +35,9 @@ Backend hiện chưa cung cấp action goal hoặc pose playback. Chat VLA hỗ 
 
 ## Robot Chat
 
-Trang `/chat` lấy checkpoint từ `GET /api/vla/models`, gửi `{profileId, task}` tới
-`POST /api/vla/commands` và hiển thị số bước đã publish. Nút gửi bị khóa khi ROS
-offline hoặc đang chạy lệnh. Stop gọi `POST /api/vla/stop` và hiển thị trạng thái
-Stopping cho tới khi lệnh kết thúc. Lỗi backend `{message}` được hiển thị trong chat.
+Trang `/chat` dùng hai dropdown nối tiếp **URDF → Model** (hỗ trợ preselect qua `?config=&model=`), tải danh sách model từ `GET /api/vla/models?robotConfigurationId=...`, gửi `{robotConfigurationId, modelId, task}` tới `POST /api/vla/commands` và hiển thị số bước đã publish. Khi đổi URDF, lựa chọn model được làm mới. Lần chạy đầu khi model chưa nạp hiển thị `"Đang nạp model…"`. Nút gửi bị khóa khi ROS offline hoặc đang chạy lệnh. Stop gọi `POST /api/vla/stop` và hiển thị trạng thái Stopping cho tới khi lệnh kết thúc. Lỗi backend `{message}` (bao gồm 409 sai URDF, 503 thiếu frame camera/ROS) được hiển thị trong chat.
 
-Backend phải cấu hình profile và inference server riêng, theo tài liệu
-`deploy/yellowarm-sim/VLA.md` trong repo Rust. Backend mặc định giới hạn toàn lệnh
-600000 ms; `BACKEND_PROXY_TIMEOUT_MS` trong `appsettings.json` là 750000 ms và cũng
-đặt deadline request phía browser. Giữ timeout proxy/browser lớn hơn deadline
-backend và build lại frontend sau khi đổi cấu hình.
+Backend nạp và chạy trực tiếp model ONNX theo tài liệu `deploy/yellowarm-sim/VLA.md` trong repo Rust. `BACKEND_PROXY_TIMEOUT_MS` trong `appsettings.json` là 750000 ms (áp dụng cho cả `experimental.proxyTimeout` khi upload gói lớn và deadline lệnh VLA phía browser). Có thể đặt `NEXT_PUBLIC_VLA_UPLOAD_URL` nếu muốn upload trực tiếp qua reverse proxy/backend thay vì qua Next.js rewrite.
 
 ## Realtime
 

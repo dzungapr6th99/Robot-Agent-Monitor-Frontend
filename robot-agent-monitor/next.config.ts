@@ -11,18 +11,35 @@ const apiBase = (
 const uploadLimit = Number(
   process.env.NEXT_PUBLIC_URDF_MAX_BYTES ?? settings.NEXT_PUBLIC_URDF_MAX_BYTES,
 );
+const vlaUploadLimit = Number(
+  process.env.NEXT_PUBLIC_VLA_MAX_PACKAGE_BYTES ??
+    settings.NEXT_PUBLIC_VLA_MAX_PACKAGE_BYTES,
+);
+const vlaUploadUrl = (process.env.NEXT_PUBLIC_VLA_UPLOAD_URL ?? "").replace(
+  /\/$/,
+  "",
+);
 
 if (!Number.isSafeInteger(uploadLimit) || uploadLimit <= 0) {
   throw new Error("NEXT_PUBLIC_URDF_MAX_BYTES must be a positive integer");
 }
+if (!Number.isSafeInteger(vlaUploadLimit) || vlaUploadLimit <= 0) {
+  throw new Error(
+    "NEXT_PUBLIC_VLA_MAX_PACKAGE_BYTES must be a positive integer",
+  );
+}
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  // Next.js rewrites stream multipart upload bodies directly without middleware buffering;
+  // proxyTimeout keeps large VLA package uploads and long VLA commands alive.
   experimental: { proxyTimeout: settings.BACKEND_PROXY_TIMEOUT_MS },
   allowedDevOrigins: settings.ALLOWED_DEV_ORIGINS,
   env: {
     NEXT_PUBLIC_API_BASE_URL: apiBase,
     NEXT_PUBLIC_URDF_MAX_BYTES: String(uploadLimit),
+    NEXT_PUBLIC_VLA_MAX_PACKAGE_BYTES: String(vlaUploadLimit),
+    NEXT_PUBLIC_VLA_UPLOAD_URL: vlaUploadUrl,
     NEXT_PUBLIC_VLA_COMMAND_TIMEOUT_MS: String(
       settings.BACKEND_PROXY_TIMEOUT_MS,
     ),

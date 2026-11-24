@@ -37,10 +37,13 @@ Route đề xuất:
 | Route | Module |
 |---|---|
 | `/` | Overview |
-| `/robots` | Robot Management |
+| `/robots` | Robot 3D Viewer |
+| `/urdf-models` | URDF Models Management |
+| `/vla-models` | VLA Models Management |
 | `/joints` | Joint Monitor & Configuration |
 | `/sensors` | Sensor Monitor & Configuration |
 | `/teleoperation` | Teleoperation |
+| `/chat` | Robot Chat (VLA) |
 | `/data` | Data Collection & Replay |
 | `/training` | Dataset, Training & Models |
 | `/settings` | Application Settings |

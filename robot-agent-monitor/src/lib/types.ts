@@ -4,14 +4,67 @@ export interface Entity {
   updatedAt?: string;
 }
 
-export type VlaProfile = {
-  id: string;
-  model: "smolvla" | "groot";
+export interface VlaManifestInput {
+  name: string;
+  kind: string;
+  dtype?: string;
+  camera?: string;
+  width?: number;
+  height?: number;
+  encoding?: string;
+  layout?: string;
+  scale?: string;
+  maxLength?: number;
+}
+
+export interface VlaManifestOutput {
+  name: string;
+  kind: string;
+  dtype?: string;
+  optional?: boolean;
+}
+
+export interface VlaManifest {
+  formatVersion: number;
+  code: string;
+  name: string;
+  modelType: string;
   version: string;
-};
+  robot: { jointNames: string[] };
+  onnx: { file: string };
+  inputs: VlaManifestInput[];
+  outputs: VlaManifestOutput[];
+  normalization?: string | null;
+  control?: { chunkSize?: number } | null;
+  files?: Record<string, string>;
+}
+
+export interface VlaModel extends Entity {
+  robotConfigurationId: number;
+  code: string;
+  displayName: string;
+  modelType: string;
+  version: string;
+  description?: string;
+  formatVersion: number;
+  packageSha256: string;
+  packageBytes: number;
+  storagePath: string;
+  manifestJson?: string;
+  manifest?: VlaManifest | null;
+}
+
+export interface VlaStatus {
+  loadedModelId: number | null;
+  configurationId: number | null;
+  running: boolean;
+  providers: string[];
+}
+
 export type VlaMessage = { role: "Operator" | "Robot"; text: string };
 export type VlaCommandResult = { publishedSteps: number };
 export type VlaStopResult = { stopping: boolean };
+
 export interface RobotProfile extends Entity {
   name: string;
   description?: string;
