@@ -6,7 +6,9 @@ import {
   Box,
   Camera,
   CircleDot,
+  Cpu,
   Database,
+  FileCode2,
   LayoutDashboard,
   MessageSquare,
   Settings,
@@ -20,6 +22,8 @@ import { Badge } from "./ui";
 const navigation = [
   ["/", "Overview", LayoutDashboard],
   ["/robots", "Robots", Box],
+  ["/urdf-models", "URDF Models", FileCode2],
+  ["/vla-models", "VLA Models", Cpu],
   ["/joints", "Joints", Activity],
   ["/sensors", "Sensors", Camera],
   ["/teleoperation", "Teleoperation", CircleDot],

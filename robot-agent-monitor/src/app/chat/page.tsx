@@ -1,58 +1,110 @@
 "use client";
-import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState, type FormEvent } from "react";
 import { RobotViewer } from "../../components/robot-viewer";
 import { useMonitor } from "../../components/monitor-provider";
 import { Badge, ErrorBox } from "../../components/ui";
-import { request } from "../../lib/api";
+import { request, vlaModels } from "../../lib/api";
 import type {
-  VlaProfile,
-  VlaMessage,
   VlaCommandResult,
+  VlaMessage,
+  VlaModel,
+  VlaStatus,
   VlaStopResult,
 } from "../../lib/types";
-const modelNames = { smolvla: "SmolVLA", groot: "GR00T" };
 
-export default function RobotChat() {
+function RobotChatContent() {
   const monitor = useMonitor();
-  const [profiles, setProfiles] = useState<VlaProfile[] | null>(null);
-  const [model, setModel] = useState<VlaProfile["model"] | "">("");
-  const [version, setVersion] = useState("");
+  const { selectConfig } = monitor;
+  const searchParams = useSearchParams();
+  const queryConfig = Number(searchParams.get("config")) || null;
+  const queryModel = Number(searchParams.get("model")) || null;
+
+  const appliedQueryConfig = useRef<number | null>(null);
+  useEffect(() => {
+    if (queryConfig && appliedQueryConfig.current !== queryConfig) {
+      appliedQueryConfig.current = queryConfig;
+      selectConfig(queryConfig);
+    }
+  }, [queryConfig, selectConfig]);
+
+  const activeConfigId = monitor.configId;
+
+  const [models, setModels] = useState<VlaModel[] | null>(null);
+  const [selectedModelId, setSelectedModelId] = useState<number | null>(
+    queryModel,
+  );
+  const [runtimeStatus, setRuntimeStatus] = useState<VlaStatus | null>(null);
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<VlaMessage[]>([]);
   const [running, setRunning] = useState(false);
+  const [loadingModel, setLoadingModel] = useState(false);
   const [stopping, setStopping] = useState(false);
   const [error, setError] = useState("");
+
   const rosOnline = monitor.connected && monitor.ros?.running === true;
-  const models = [...new Set(profiles?.map((profile) => profile.model))];
-  const activeModel = model || models[0];
-  const versions =
-    profiles?.filter((profile) => profile.model === activeModel) ?? [];
-  const activeProfile =
-    versions.find((profile) => profile.id === version) ?? versions[0];
+  const activeModel =
+    models?.find((item) => item.id === selectedModelId) ?? models?.[0] ?? null;
 
   useEffect(() => {
     const controller = new AbortController();
-    request<VlaProfile[]>("/api/vla/models", { signal: controller.signal })
-      .then(setProfiles)
-      .catch((error: Error) => {
-        if (!controller.signal.aborted) setError(error.message);
+    vlaModels
+      .status(controller.signal)
+      .then(setRuntimeStatus)
+      .catch(() => {
+        // Status badge is best-effort.
       });
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    if (!activeConfigId) return;
+    const controller = new AbortController();
+    vlaModels
+      .list({ configurationId: activeConfigId }, controller.signal)
+      .then((rows) => {
+        if (!controller.signal.aborted) {
+          setModels(rows);
+          setError("");
+        }
+      })
+      .catch((err: Error) => {
+        if (!controller.signal.aborted) {
+          setModels([]);
+          setError(err.message);
+        }
+      });
+    return () => controller.abort();
+  }, [activeConfigId]);
+
+  const handleConfigChange = (nextConfigId: number | null) => {
+    selectConfig(nextConfigId);
+    setSelectedModelId(null);
+    setModels(null);
+    setError("");
+  };
+
   async function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const task = draft.trim();
-    if (!task || !activeProfile || running || !rosOnline) return;
+    if (!task || !activeConfigId || !activeModel || running || !rosOnline)
+      return;
+    const willLoad = runtimeStatus?.loadedModelId !== activeModel.id;
     setDraft("");
     setRunning(true);
+    setLoadingModel(willLoad);
     setError("");
     setMessages((previous) => [...previous, { role: "Operator", text: task }]);
     try {
       const result = await request<VlaCommandResult>("/api/vla/commands", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profileId: activeProfile.id, task }),
+        body: JSON.stringify({
+          robotConfigurationId: activeConfigId,
+          modelId: activeModel.id,
+          task,
+        }),
         signal: AbortSignal.timeout(
           Number(process.env.NEXT_PUBLIC_VLA_COMMAND_TIMEOUT_MS),
         ),
@@ -64,13 +116,17 @@ export default function RobotChat() {
           text: `Published ${result.publishedSteps} motion steps to ROS.`,
         },
       ]);
-    } catch (error) {
-      setMessages((previous) => [
-        ...previous,
-        { role: "Robot", text: (error as Error).message },
-      ]);
+      vlaModels
+        .status()
+        .then(setRuntimeStatus)
+        .catch(() => {});
+    } catch (err) {
+      const msg = (err as Error).message;
+      setError(msg);
+      setMessages((previous) => [...previous, { role: "Robot", text: msg }]);
     } finally {
       setRunning(false);
+      setLoadingModel(false);
       setStopping(false);
     }
   }
@@ -82,57 +138,79 @@ export default function RobotChat() {
         method: "POST",
       });
       if (!result.stopping) setStopping(false);
-    } catch (error) {
-      setError((error as Error).message);
+    } catch (err) {
+      setError((err as Error).message);
       setStopping(false);
     }
   }
+
+  const configurations = monitor.data["robot-configurations"];
+  const visibleModels = activeConfigId ? (models ?? []) : [];
 
   return (
     <>
       <div className="page-heading">
         <div>
           <h1>Robot Chat</h1>
-          <p>Send an instruction using a trained VLA checkpoint.</p>
+          <p>Chọn URDF rồi chọn model VLA tương ứng để gửi lệnh điều khiển.</p>
         </div>
+        {runtimeStatus && runtimeStatus.providers.length > 0 && (
+          <Badge tone="blue">
+            Providers: {runtimeStatus.providers.join(", ")}
+          </Badge>
+        )}
       </div>
       <div className="robot-chat">
         <section className="panel robot-chat-panel">
           <form className="form-stack" onSubmit={send}>
             <div className="robot-chat-models">
               <label>
-                Model
+                URDF
                 <select
-                  aria-label="Model"
-                  value={activeModel ?? ""}
-                  disabled={running || !models.length}
-                  onChange={(event) => {
-                    setModel(event.target.value as VlaProfile["model"]);
-                    setVersion("");
-                  }}
+                  aria-label="URDF"
+                  value={activeConfigId ?? ""}
+                  disabled={running || !configurations.length}
+                  onChange={(event) =>
+                    handleConfigChange(Number(event.target.value) || null)
+                  }
                 >
-                  {!models.length && <option value="">No models</option>}
-                  {models.map((name) => (
-                    <option key={name} value={name}>
-                      {modelNames[name]}
-                    </option>
-                  ))}
+                  <option value="">Chọn URDF</option>
+                  {configurations.map((cfg) => {
+                    const profile = monitor.data["robot-profiles"].find(
+                      (p) => p.id === cfg.robotProfileId,
+                    );
+                    return (
+                      <option key={cfg.id} value={cfg.id}>
+                        {profile ? `${profile.name} · ` : ""}
+                        {cfg.name}
+                      </option>
+                    );
+                  })}
                 </select>
               </label>
               <label>
-                Training version
+                Model
                 <select
-                  aria-label="Training version"
-                  value={activeProfile?.id ?? ""}
-                  disabled={running || !versions.length}
-                  onChange={(event) => setVersion(event.target.value)}
+                  aria-label="Model"
+                  value={activeModel?.id ?? ""}
+                  disabled={
+                    running || !activeConfigId || visibleModels.length === 0
+                  }
+                  onChange={(event) =>
+                    setSelectedModelId(Number(event.target.value) || null)
+                  }
                 >
-                  {!versions.length && <option value="">No versions</option>}
-                  {versions.map((profile) => (
-                    <option key={profile.id} value={profile.id}>
-                      {profile.version}
-                    </option>
-                  ))}
+                  {!activeConfigId ? (
+                    <option value="">Chọn URDF trước</option>
+                  ) : visibleModels.length === 0 ? (
+                    <option value="">Không có model VLA</option>
+                  ) : (
+                    visibleModels.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.displayName} · {item.modelType} · {item.version}
+                      </option>
+                    ))
+                  )}
                 </select>
               </label>
             </div>
@@ -142,9 +220,18 @@ export default function RobotChat() {
               aria-label="Robot conversation"
               aria-live="polite"
             >
-              {profiles?.length === 0 && (
+              {!activeConfigId && (
                 <p className="muted">
-                  Configure a VLA checkpoint on the backend to start.
+                  Chọn một cấu hình URDF trước.{" "}
+                  <Link href="/urdf-models">Quản lý URDF Models</Link>
+                </p>
+              )}
+              {activeConfigId && models?.length === 0 && (
+                <p className="muted">
+                  URDF này chưa có model VLA.{" "}
+                  <Link href={`/vla-models?config=${activeConfigId}`}>
+                    Tải lên model VLA
+                  </Link>
                 </p>
               )}
               {messages.map((message, index) => (
@@ -158,7 +245,11 @@ export default function RobotChat() {
               ))}
               {running && (
                 <p className="muted" role="status">
-                  {stopping ? "Stopping…" : "Running instruction…"}
+                  {stopping
+                    ? "Stopping…"
+                    : loadingModel
+                      ? "Đang nạp model…"
+                      : "Running instruction…"}
                 </p>
               )}
             </div>
@@ -176,14 +267,18 @@ export default function RobotChat() {
                 rows={3}
                 maxLength={2048}
                 placeholder="Pick up the red cube."
-                disabled={!activeProfile || running}
+                disabled={!activeModel || running}
               />
             </label>
             <div className="button-row">
               <button
                 className="primary"
                 disabled={
-                  !activeProfile || !draft.trim() || running || !rosOnline
+                  !activeConfigId ||
+                  !activeModel ||
+                  !draft.trim() ||
+                  running ||
+                  !rosOnline
                 }
               >
                 Send instruction
@@ -211,5 +306,13 @@ export default function RobotChat() {
         </section>
       </div>
     </>
+  );
+}
+
+export default function RobotChat() {
+  return (
+    <Suspense fallback={<div className="loading">Đang tải Robot Chat…</div>}>
+      <RobotChatContent />
+    </Suspense>
   );
 }
